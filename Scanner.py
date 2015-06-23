@@ -1,6 +1,7 @@
 from PyDAQmx import *
 import numpy
 import random
+import time	
 
 #################################################################################
 #helper class for Sample size
@@ -52,7 +53,8 @@ class Scanner:
 		#local variables rerpresenting the sate of the scanner
 		self.currentX = 0
 		self.currentY = 0
-		self.currentVoltage = 0
+		self.currentVoltagePhi = 0
+		self.currentVoltageTheta = 0
 		self.sampleSize = Size(sampleSize.height, sampleSize.width)
 		self.sampleDistance = sampleDistance
 		self.currentGalvoPhi = 0
@@ -68,13 +70,11 @@ class Scanner:
 		self.minY = -sampleSize.height / 2.0
 		
 		#prepare the output channels
-		self.analog_outputPhi = Task()
-		self.analog_outputPhi.CreateAOVoltageChan(devicePhi,"",-10.0,10.0,DAQmx_Val_Volts,None)
-		self.analog_outputPhi.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
-		
-		self.analog_outputTheta = Task()
-		self.analog_outputTheta.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
-		self.analog_outputTheta.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
+		self.analog_output = Task()
+		self.analog_output.CreateAOVoltageChan(",".join([devicePhi, deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
+		#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
+		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
+		time.sleep(2)
 		
 		
 	#get state of galvo -> return angle in degree
@@ -86,37 +86,43 @@ class Scanner:
 	#setAngles for the galvo (enter values in degree), private: use setX and setY for public access
 	def __setPhi(self, phi):
 		voltage = self.sensitivityDeg * phi
-		data = numpy.zeros((100,), dtype=numpy.float64)
-		data[0:100] = voltage
-		
+		data = numpy.zeros((200,), dtype=numpy.float64)
+		data[:99] = voltage
+		data[99:] = self.currentVoltageTheta
 		#set the state of the object
-		self.currentVoltage = voltage
+		self.currentVoltagePhi = voltage
 		self.currentGalvoPhi = phi
 		
 		#write to the output channel
-		self.analog_outputPhi.WriteAnalogF64(100,True,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.StartTask()
+		time.sleep(0.0001)
+		self.analog_output.StopTask()
 	def __setPhiRad(self, phiRad):
 		self.__setPhi(180./numpy.pi * phiRad)
 		
 	def __setTheta(self, theta):
 		voltage = self.sensitivityDeg * theta
-		data = numpy.zeros((100,), dtype=numpy.float64)
-		data[0:100] = voltage
+		data = numpy.zeros((200,), dtype=numpy.float64)
+		data[:99] = self.currentVoltagePhi
+		data[99:] = voltage
 		
 		#set the state of the object
-		self.currentVoltage = voltage
+		self.currentVoltageTheta = voltage
 		self.currentGalvoTheta = theta
 		
 		#write to the output channel
-		self.analog_outputTheta.WriteAnalogF64(100,True,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.StartTask()
+		time.sleep(0.0001)
+		self.analog_output.StopTask()
 	def __setThetaRad(self, thetaRad):
 		self.__setTheta(180./numpy.pi * thetaRad)
 		
 	def ReleaseObjects(self):
-		self.analog_outputPhi.StopTask()
-		self.analog_outputPhi.ClearTask()
-		self.analog_outputTheta.StopTask()
-		self.analog_outputTheta.ClearTask()
+		self.analog_output.StopTask()
+		self.analog_output.ClearTask()
+		
 		
 	#units are mm: set x and y according to angle and sampledistance x and y is relative to the sample, so it is the
 	#where the laser beam will hit the target
@@ -139,3 +145,15 @@ class Scanner:
 		self.__setThetaRad(numpy.arctan(Y * self.lens.LensNumber()))
 		#set the state of the situation
 		self.currentY = Y
+	
+	def setPoint(self, x, y):
+		self.setX(x)
+		self.setY(y)
+		
+	def scanSample(self):
+		self.setPoint(self.minX, self.minY)
+		for i in numpy.linspace(0,self.maxY, 10):
+			for o in numpy.linspace(0, self.maxX, 10):
+				print(i,o)
+				self.setPoint(self.minX + o, self.minY + i)
+				#TODO get picture
