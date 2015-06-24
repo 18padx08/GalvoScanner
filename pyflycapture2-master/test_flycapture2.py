@@ -17,6 +17,13 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+# Remove CLS Client from system path
+if  os.environ['PATH'].find("IVI") >= 0 or os.environ['PATH'].find("OpenCL") >= 0 or os.environ['PATH'].find("ATI Technologies") >= 0 :
+    os.environ['PATH'] = ";".join([it for it in os.environ['PATH'].split(";") if not  (it.find("IVI")>0 or it.find("OpenCL")>0 or it.find("ATI Technologies")>0 )])
+
+print(os.environ['path'])
+
 import flycapture2 as fc2
 import numpy as np
 
