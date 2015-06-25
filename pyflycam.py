@@ -97,6 +97,28 @@ fc2BayerTileFormat = c_int
 
 #define enum for fc2PixelFormat
 fc2PixelFormat = c_int
+FC2_PIXEL_FORMAT_MONO8			= fc2PixelFormat(0x80000000) # /**< 8 bits of mono information. */
+FC2_PIXEL_FORMAT_411YUV8		= fc2PixelFormat(0x40000000) #, /**< YUV 4:1:1. */
+FC2_PIXEL_FORMAT_422YUV8		= fc2PixelFormat(0x20000000)#, /**< YUV 4:2:2. */
+FC2_PIXEL_FORMAT_444YUV8		= fc2PixelFormat(0x10000000)#, /**< YUV 4:4:4. */
+FC2_PIXEL_FORMAT_RGB8			= fc2PixelFormat(0x08000000)#, /**< R = G = B = 8 bits. */
+FC2_PIXEL_FORMAT_MONO16			= fc2PixelFormat(0x04000000)#, /**< 16 bits of mono information. */
+FC2_PIXEL_FORMAT_RGB16			= fc2PixelFormat(0x02000000)#, /**< R = G = B = 16 bits. */
+FC2_PIXEL_FORMAT_S_MONO16		= fc2PixelFormat(0x01000000)#, /**< 16 bits of signed mono information. */
+FC2_PIXEL_FORMAT_S_RGB16		= fc2PixelFormat(0x00800000)#, /**< R = G = B = 16 bits signed. */
+FC2_PIXEL_FORMAT_RAW8			= fc2PixelFormat(0x00400000)#, /**< 8 bit raw data output of sensor. */
+FC2_PIXEL_FORMAT_RAW16			= fc2PixelFormat(0x00200000)#, /**< 16 bit raw data output of sensor. */
+FC2_PIXEL_FORMAT_MONO12			= fc2PixelFormat(0x00100000)#, /**< 12 bits of mono information. */
+FC2_PIXEL_FORMAT_RAW12			= fc2PixelFormat(0x00080000)#, /**< 12 bit raw data output of sensor. */
+FC2_PIXEL_FORMAT_BGR			= fc2PixelFormat(0x80000008)#, /**< 24 bit BGR. */
+FC2_PIXEL_FORMAT_BGRU			= fc2PixelFormat(0x40000008)#, /**< 32 bit BGRU. */
+FC2_PIXEL_FORMAT_RGB			= FC2_PIXEL_FORMAT_RGB8 #, /**< 24 bit RGB. */
+FC2_PIXEL_FORMAT_RGBU			= fc2PixelFormat(0x40000002)#, /**< 32 bit RGBU. */
+FC2_PIXEL_FORMAT_BGR16			= fc2PixelFormat(0x02000001)#, /**< R = G = B = 16 bits. */
+FC2_PIXEL_FORMAT_BGRU16			= fc2PixelFormat(0x02000002)#, /**< 64 bit BGRU. */
+FC2_PIXEL_FORMAT_422YUV8_JPEG	= fc2PixelFormat(0x40000001)#, /**< JPEG compressed stream. */
+FC2_NUM_PIXEL_FORMATS			=  fc2PixelFormat(20)#, /**< Number of pixel formats. */
+FC2_UNSPECIFIED_PIXEL_FORMAT	= fc2PixelFormat(0)# /**< Unspecified pixel format. */
 
 
 
@@ -183,6 +205,8 @@ def fc2RetrieveBuffer(context, image):
 	return windll.FlyCapture2_C.fc2RetrieveBuffer(context, byref(image))
 	
 def fc2GetImageTimeStamp(image):
+	helperFunction = windll.FlyCapture2_C.fc2GetImageTimeStamp
+	helperFunction.restype = fc2TimeStamp
 	return windll.FlyCapture2_C.fc2GetImageTimeStamp(byref(image))
 	
 def fc2ConvertImageTo(pixelFormat, srcImage, destImage):
@@ -193,3 +217,15 @@ def fc2SaveImage(image, filename, fileFormat):
 
 def fc2DestroyImage(image):
 	return windll.FlyCapture2_C.fc2DestroyImage(byref(image))
+
+def fc2FireSoftwareTrigger(context):
+	return windll.FlyCapture2_C.fc2FireSoftwareTrigger(context)
+
+def fc2WriteRegister(context, address, value):
+	return windll.FlyCapture2_C.fc2WriteRegister(context, address, value)
+
+def fc2ReadeRegister(context, address, pValue):
+	return windll.FlyCapture2_C.fc2ReadRegister(context, address, byref(pValue))
+
+def fc2GetTriggerModeInfo(context, triggerModeInfo):
+	return windll.FlyCapture2_C.fc2GetTriggerModeInfo(context, byref(triggerModeInfo))

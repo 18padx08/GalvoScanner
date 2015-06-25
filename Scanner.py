@@ -2,6 +2,11 @@ from PyDAQmx import *
 import numpy
 import random
 import time	
+from pyflycam import *
+
+#pillow.readthedocs.org/ for image manipulation
+
+#PIL.ImageChops.composite(image1, image2, mask)
 
 #################################################################################
 #helper class for Sample size
@@ -114,7 +119,7 @@ class Scanner:
 		#write to the output channel
 		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
 		self.analog_output.StartTask()
-		time.sleep(0.0001)
+		#time.sleep(0.0001)
 		self.analog_output.StopTask()
 	def __setThetaRad(self, thetaRad):
 		self.__setTheta(180./numpy.pi * thetaRad)
@@ -151,9 +156,62 @@ class Scanner:
 		self.setY(y)
 		
 	def scanSample(self):
+		#init camera
+		self.initCamera()
+		#start capturing pictures
+		fc2StartCapture(self._context)
+		
+		#create the two pictures one for getting input the other to save
+		rawImage = fc2Image()
+		convertedImage = fc2Image()
+		fc2CreateImage(rawImage)
+		fc2CreateImage(convertedImage)
+		
 		self.setPoint(self.minX, self.minY)
 		for i in numpy.linspace(0,self.maxY, 10):
 			for o in numpy.linspace(0, self.maxX, 10):
-				print(i,o)
+				#get picture
+				fc2RetrieveBuffer(self._context, rawImage)
+				ts = fc2GetImageTimeStamp(rawImage)
+				print(ts.cycleCount)	
+				self.savePicture("[%f %f]_at_%d.png"%(o, i, ts.cycleSeconds), rawImage, convertedImage)
+				#go one step further			
 				self.setPoint(self.minX + o, self.minY + i)
-				#TODO get picture
+
+
+		#after we are done scanning stop Capturing 
+		fc2DestroyImage(rawImage)
+		fc2DestroyImage(convertedImage)
+		fc2StopCapture(self._context)
+	
+	def savePicture(self, name, rawImage, convertedImage):
+		fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
+		
+		fc2SaveImage(convertedImage, name.encode('utf-8'), 6)
+
+		
+	
+	def initCamera(self):
+		error = fc2Error()
+		self._context = fc2Context()
+		self._guid = fc2PGRGuid()
+		self._numCameras = c_uint()
+		
+		error = fc2CreateContext(self._context)
+		if error != FC2_ERROR_OK.value:
+			print("Error in fc2CreateContext: " + str(error))
+		
+		error = fc2GetNumOfCameras(self._context, self._numCameras)
+		if error != FC2_ERROR_OK.value:
+			print("Error in fc2GetNumOfCameras: " + str(error))
+		if self._numCameras == 0:
+			print("No Cameras detected")
+		
+		#get the first camera
+		error = fc2GetCameraFromIndex(self._context, 0, self._guid)
+		if error != FC2_ERROR_OK.value:
+			print("Error in fc2GetCameraFromIndex: " + str(error))
+		
+		error = fc2Connect(self._context, self._guid)
+		if error!= FC2_ERROR_OK.value:
+			print("Error in fc2Connect: " + str(error))		
