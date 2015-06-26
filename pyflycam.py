@@ -120,7 +120,10 @@ FC2_PIXEL_FORMAT_422YUV8_JPEG	= fc2PixelFormat(0x40000001)#, /**< JPEG compresse
 FC2_NUM_PIXEL_FORMATS			=  fc2PixelFormat(20)#, /**< Number of pixel formats. */
 FC2_UNSPECIFIED_PIXEL_FORMAT	= fc2PixelFormat(0)# /**< Unspecified pixel format. */
 
-
+#define enum for propertytype
+fc2PropertyType = c_int
+FC2_SHUTTER = fc2PropertyType(12)
+FC2_GAIN = fc2PropertyType(13)
 
 ##############################################################################################################
 #typedefs
@@ -170,6 +173,10 @@ class fc2Image(Structure):
 	_fields_ = [("rows", c_uint), ("cols", c_uint), ("stride", c_uint), ("pData", POINTER(c_ubyte)), ("dataSize", c_uint),
 				("receivedDataSize", c_uint), ("format", fc2PixelFormat), ("bayerFormat", fc2BayerTileFormat), ("imageImpl", fc2ImageImpl)]
 
+#property struct
+class fc2Property(Structure):
+	_fields_ = [("type", fc2PropertyType), ("present", c_int), ("absControl", c_int), ("onePush", c_int), ("onOff", c_int), ("autoManualMode", c_int), ("valueA", c_uint), ("valueB", c_uint)
+				("absValue", c_float), ("reserved", 8*c_uint)]
 ###############################################################################################################
 
 #function definitions
@@ -229,3 +236,9 @@ def fc2ReadeRegister(context, address, pValue):
 
 def fc2GetTriggerModeInfo(context, triggerModeInfo):
 	return windll.FlyCapture2_C.fc2GetTriggerModeInfo(context, byref(triggerModeInfo))
+
+def fc2SetProperty(context, prop):
+	return windll.FlyCapture2_C.fc2SetProperty(context, byref(prop))
+
+def fc2GetProperty(context, prop):
+	return windll.FlyCapture2_C.fc2GetProperty(context, byref(prop))
