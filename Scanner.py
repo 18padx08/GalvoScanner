@@ -44,6 +44,10 @@ class AngleOutsideOfRangeException(Exception):
 
 
 #################################################################
+def scannerObjects(dct):
+	if "_sample_size_" in dct:
+		return Size(dct["height"], dct["width"])
+	return dct
 
 class Scanner:
 	#scanner class: needs sampleSize (to calculate the max and min angles for the galvo) and 
@@ -54,25 +58,38 @@ class Scanner:
 	sensitivityDeg = 0.5
 	
 	# arguments: all units in mm, devicePhi for Xtranslation, devicetheta for Ytranslation
-	def __init__(self, sampleSize, sampleDistance,beamDiameter = 5, lens = Lens(1.3,1.5), devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
+	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5), devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
 		#local variables rerpresenting the sate of the scanner
 		self.currentX = 0
 		self.currentY = 0
 		self.currentVoltagePhi = 0
 		self.currentVoltageTheta = 0
-		self.sampleSize = Size(sampleSize.height, sampleSize.width)
-		self.sampleDistance = sampleDistance
+		self.sampleSize = sampleSize
 		self.currentGalvoPhi = 0
 		self.currentGalvoTheta = 0
 		self.lens = lens
+		self.calibrationPhi = 0
+		self.calibrationTheta = 0
+		
+		#the calibration values, read them from the config file
+		import json
+		import os.path
+		if os.path.isfile("scanner_config.cfg"):
+			self._config = json.loads(open("scanner_config.cfg").read(), object_hook=scannerObjects)
+		else:
+			self._config = {}
+			self._config["settings"] = {}
+		if "settings" in  self._config:
+			for key in self._config["settings"]:
+				setattr(self, key, self._config["settings"][key])
 		
 		#max and min x are half the sample size since we place the sample in such a way that it is centered arround the
 		#origin of lens
-		self.maxX = sampleSize.width/2.0
-		self.minX = -sampleSize.width/2.0
+		self.maxX = self.sampleSize.width/2.0
+		self.minX = -self.sampleSize.width/2.0
 		
-		self.maxY = sampleSize.height / 2.0
-		self.minY = -sampleSize.height / 2.0
+		self.maxY = self.sampleSize.height / 2.0
+		self.minY = -self.sampleSize.height / 2.0
 		
 		#prepare the output channels
 		self.analog_output = Task()
@@ -88,9 +105,49 @@ class Scanner:
 	def getAngleThetaDegree(self):
 		return self.currentGalvoTheta * (180./numpy.pi)
 	
+	#set Voltage directly
+	def setVoltagePhi(voltage):
+		data = numpy.zeros((200,), dtype=numpy.float64)
+		data[:99] = voltage
+		data[99:] = self.currentVoltageTheta
+		#set the state of the object
+		self.currentVoltagePhi = voltage
+		self.currentGalvoPhi = phi
+		
+		#write to the output channel
+		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.StartTask()
+		time.sleep(0.0001)
+		self.analog_output.StopTask()
+	
+	def setVoltageTheta(voltage):
+		data = numpy.zeros((200,), dtype=numpy.float64)
+		data[:99] = self.currentVoltagePhi
+		data[99:] = voltage
+		
+		#set the state of the object
+		self.currentVoltageTheta = voltage
+		self.currentGalvoTheta = theta
+		
+		#write to the output channel
+		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.StartTask()
+		#time.sleep(0.0001)
+		self.analog_output.StopTask()
+		
+	def calibrate():
+		self.calibrationPhi = self.currentVoltagePhi
+		self.currentVoltagePhi = 0
+		self.calibrationTheta = self.currentVoltageTheta
+		self.currentVoltageTheta = 0
+		self.currentGalvoTheta = 0
+		self.currentGalvoPhi = 0
+		self.currentX = 0
+		self.currentY = 0		
+	
 	#setAngles for the galvo (enter values in degree), private: use setX and setY for public access
 	def __setPhi(self, phi):
-		voltage = self.sensitivityDeg * phi +1.0
+		voltage = self.sensitivityDeg * phi + self.calibrationPhi
 		data = numpy.zeros((200,), dtype=numpy.float64)
 		data[:99] = voltage
 		data[99:] = self.currentVoltageTheta
@@ -107,7 +164,7 @@ class Scanner:
 		self.__setPhi(180./numpy.pi * phiRad)
 		
 	def __setTheta(self, theta):
-		voltage = self.sensitivityDeg * theta
+		voltage = self.sensitivityDeg * theta + self.calibrationTheta
 		data = numpy.zeros((200,), dtype=numpy.float64)
 		data[:99] = self.currentVoltagePhi
 		data[99:] = voltage
