@@ -90,7 +90,7 @@ class Scanner:
 	
 	#setAngles for the galvo (enter values in degree), private: use setX and setY for public access
 	def __setPhi(self, phi):
-		voltage = self.sensitivityDeg * phi
+		voltage = self.sensitivityDeg * phi +1.0
 		data = numpy.zeros((200,), dtype=numpy.float64)
 		data[:99] = voltage
 		data[99:] = self.currentVoltageTheta
@@ -173,8 +173,8 @@ class Scanner:
 				#get picture
 				fc2RetrieveBuffer(self._context, rawImage)
 				ts = fc2GetImageTimeStamp(rawImage)
-				print(ts.cycleCount)	
-				self.savePicture("[%f %f]_at_%d.png"%(o, i, ts.cycleSeconds), rawImage, convertedImage)
+				#print(ts.cycleCount)	
+				self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				#go one step further			
 				self.setPoint(self.minX + o, self.minY + i)
 
