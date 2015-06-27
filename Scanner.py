@@ -71,6 +71,8 @@ class Scanner:
 		self.calibrationPhi = 0
 		self.calibrationTheta = 0
 		
+		self.devicePhi = devicePhi
+		self.deviceTheta = deviceTheta
 		#the calibration values, read them from the config file
 		import json
 		import os.path
@@ -93,7 +95,7 @@ class Scanner:
 		
 		#prepare the output channels
 		self.analog_output = Task()
-		self.analog_output.CreateAOVoltageChan(",".join([devicePhi, deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
+		self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
 		#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
 		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
 		time.sleep(2)
