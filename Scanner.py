@@ -100,7 +100,23 @@ class Scanner:
 		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
 		time.sleep(2)
 		
+	#setImage properties
+	def setImageProperties(self, gain=0.0, shutter=10.0):
+		gainProp = fc2Property()
+		shutterProp = fc2Property()
+		gainProp.type = FC2_GAIN
+		shutterProp.type = FC2_SHUTTER
 		
+		#retrieve current settings
+		fc2GetProperty(self._context, gainProp)
+		fc2GetProperty(self._context, shutterProp)
+		
+		gainProp.absValue = gain
+		shutterProp.absValue = shutter
+		
+		fc2SetProperty(self._context, gainProp)
+		fc2SetProperty(self._context, shutterProp)
+			
 	#get state of galvo -> return angle in degree
 	def getAnglePhiDegree(self):
 		return self.currentGalvoPhi * (180./numpy.pi)
