@@ -58,7 +58,7 @@ class Scanner:
 	sensitivityDeg = 0.5
 	
 	# arguments: all units in mm, devicePhi for Xtranslation, devicetheta for Ytranslation
-	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5), devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
+	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1" devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
 		#local variables rerpresenting the sate of the scanner
 		self.currentX = 0
 		self.currentY = 0
@@ -70,6 +70,8 @@ class Scanner:
 		self.lens = lens
 		self.calibrationPhi = 0
 		self.calibrationTheta = 0
+		
+		self.dataArray = {}
 		
 		#the calibration values, read them from the config file
 		import json
@@ -96,6 +98,8 @@ class Scanner:
 		self.analog_output.CreateAOVoltageChan(",".join([devicePhi, deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
 		#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
 		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
+		
+		self.analog_output.CreateAIVoltageChan(inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
 		time.sleep(2)
 		
 	#setImage properties
@@ -248,8 +252,14 @@ class Scanner:
 				ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
 				self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
+				time.sleep(0.01)
+				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
+				read32 = int32()
+				self.analog_output.ReadAnalogF64(-1,10.0,DAQmx_Val_GroupByChannel, data, 100, byref(read32), None)
+				self.dataArray[o][i] = numpy.mean(data)
 				#go one step further			
 				self.setPoint(self.minX + o, self.minY + i)
+		print(self.dataArray)
 
 
 		#after we are done scanning stop Capturing 
