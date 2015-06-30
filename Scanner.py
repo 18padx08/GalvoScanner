@@ -49,6 +49,11 @@ def scannerObjects(dct):
 	if "_sample_size_" in dct:
 		return Size(dct["height"], dct["width"])
 	return dct
+	
+	if "_eval_" in dct:
+		for lib in dct["libraries"]:
+			exec("import " + str(lib))
+		return exec(dct["expression"])
 
 class Scanner:
 	#scanner class: needs sampleSize (to calculate the max and min angles for the galvo) and 
@@ -99,7 +104,7 @@ class Scanner:
 		if hasattr(self, 'ysteps'):
 			self.ysteps = numpy.linspace(0,0.05, 500)
 
-		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps))), dtype=numpy.float64)
+		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		
 		#prepare the output channels
 		self.analog_output = Task()
@@ -113,8 +118,8 @@ class Scanner:
 		
 		self.initCamera()
 		
-		if(hasattr(self, imageSettings)):
-			setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
+		if(hasattr(self, "imageSettings")):
+			self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 		
 	#setImage properties
