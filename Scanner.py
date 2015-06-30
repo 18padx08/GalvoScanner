@@ -268,6 +268,9 @@ class Scanner:
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
+		imgplot = plt.imshow(self.dataArray)
+		imgplot.set_interpolation('none')
+		plt.show()
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
@@ -283,11 +286,12 @@ class Scanner:
 				self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5e-3 else 0
-				#go one step further			
+				#go one step further
+				imgplot.set_data(self.dataArray)
+				plt.draw()			
 				countX += 1
 				self.setPoint( o, i)
 			countY += 1
-		plt.imshow(self.dataArray)
 		plt.savefig("sampleScan.jpeg")
 
 
