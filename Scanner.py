@@ -94,10 +94,12 @@ class Scanner:
 		self.maxY = self.sampleSize.height / 2.0
 		self.minY = -self.sampleSize.height / 2.0
 		
-		self.xsteps = numpy.linspace(0, 0.05, 500)
-		self.ysteps = numpy.linspace(0,0.05, 500)
+		if hasattr(self, 'xsteps'):
+			self.xsteps = numpy.linspace(0, 0.05, 500)
+		if hasattr(self, 'ysteps'):
+			self.ysteps = numpy.linspace(0,0.05, 500)
 
-		self.dataArray = numpy.zeros((500,500), dtype=numpy.float64)
+		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps))), dtype=numpy.float64)
 		
 		#prepare the output channels
 		self.analog_output = Task()
@@ -107,7 +109,12 @@ class Scanner:
 		
 		self.analog_input = Task()
 		self.analog_input.CreateAIVoltageChan(self.inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
-		self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)		
+		self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
+		
+		self.initCamera()
+		
+		if(hasattr(self, imageSettings)):
+			setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 		
 	#setImage properties
@@ -212,6 +219,9 @@ class Scanner:
 	def ReleaseObjects(self):
 		self.analog_output.StopTask()
 		self.analog_output.ClearTask()
+		self.analog_input.StopTask()
+		self.analog_input.ClearTask()
+		self.uninitCamera()
 		
 		
 	#units are mm: set x and y according to angle and sampledistance x and y is relative to the sample, so it is the
@@ -241,8 +251,6 @@ class Scanner:
 		self.setY(y)
 		
 	def scanSample(self):
-		#init camera
-		#self.initCamera()
 		#start capturing pictures
 		#fc2StartCapture(self._context)
 		
@@ -289,6 +297,9 @@ class Scanner:
 		fc2SaveImage(convertedImage, name.encode('utf-8'), 6)
 
 		
+	def uninitCamera(self):
+		fc2StopCapture(self._context)
+		fc2DestroyContext(self._context)
 	
 	def initCamera(self):
 		error = fc2Error()
