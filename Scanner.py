@@ -53,7 +53,7 @@ def scannerObjects(dct):
 	if "_eval_" in dct:
 		for lib in dct["libraries"]:
 			exec("import " + str(lib))
-		return exec(dct["expression"])
+		return eval(dct["expression"])
 
 class Scanner:
 	#scanner class: needs sampleSize (to calculate the max and min angles for the galvo) and 
@@ -107,19 +107,21 @@ class Scanner:
 		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		
 		#prepare the output channels
-		self.analog_output = Task()
-		self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
-		#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
-		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
+		try:
+			self.analog_output = Task()
+			self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
+			#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
+			self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
+			
+			self.analog_input = Task()
+			self.analog_input.CreateAIVoltageChan(self.inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
+			self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
+		except(Exception):
+			print("Could not init DaqMX")
+		self.initCamera()
 		
-		self.analog_input = Task()
-		self.analog_input.CreateAIVoltageChan(self.inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
-		self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
-		
-		#self.initCamera()
-		
-		#if(hasattr(self, "imageSettings")):
-		#	self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
+		if(hasattr(self, "imageSettings")):
+			self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 		
 	#setImage properties
@@ -257,13 +259,13 @@ class Scanner:
 		
 	def scanSample(self):
 		#start capturing pictures
-		#fc2StartCapture(self._context)
+		fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-		#rawImage = fc2Image()
-		#convertedImage = fc2Image()
-		#fc2CreateImage(rawImage)
-		#fc2CreateImage(convertedImage)
+		rawImage = fc2Image()
+		convertedImage = fc2Image()
+		fc2CreateImage(rawImage)
+		fc2CreateImage(convertedImage)
 		
 		self.setPoint(self.minX, self.minY)
 		countX = 0
@@ -275,10 +277,10 @@ class Scanner:
 			countX = 0
 			for o in self.xsteps:
 				#get picture
-				#fc2RetrieveBuffer(self._context, rawImage)
+				fc2RetrieveBuffer(self._context, rawImage)
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
+				self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
 				read32 = int32()
 				self.analog_input.StartTask()
