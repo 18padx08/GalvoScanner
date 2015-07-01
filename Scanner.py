@@ -116,10 +116,10 @@ class Scanner:
 		self.analog_input.CreateAIVoltageChan(self.inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
 		self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
 		
-		self.initCamera()
+		#self.initCamera()
 		
-		if(hasattr(self, "imageSettings")):
-			self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
+		#if(hasattr(self, "imageSettings")):
+		#	self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 		
 	#setImage properties
@@ -279,7 +279,7 @@ class Scanner:
 				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
 				read32 = int32()
 				self.analog_input.StartTask()
-				self.analog_input.ReadAnalogF64(100,5,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
+				self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
 				self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5e-3 else 0
