@@ -258,28 +258,28 @@ class Scanner:
 		
 	def scanSample(self):
 		#start capturing pictures
-		fc2StartCapture(self._context)
+		#fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-		rawImage = fc2Image()
-		convertedImage = fc2Image()
-		fc2CreateImage(rawImage)
-		fc2CreateImage(convertedImage)
+		#rawImage = fc2Image()
+		#convertedImage = fc2Image()
+		#fc2CreateImage(rawImage)
+		#fc2CreateImage(convertedImage)
 		
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
 		imgplot = plt.imshow(self.dataArray)
 		imgplot.set_interpolation('none')
-		plt.show()
+		plt.show(block = False)
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
 				#get picture
-				fc2RetrieveBuffer(self._context, rawImage)
+				#fc2RetrieveBuffer(self._context, rawImage)
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
+				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
 				read32 = int32()
 				self.analog_input.StartTask()
@@ -287,19 +287,19 @@ class Scanner:
 				self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5e-3 else 0
-				#go one step further
-				imgplot.set_data(self.dataArray)
-				plt.draw()			
+				#go one step further			
 				countX += 1
 				self.setPoint( o, i)
+			imgplot.set_data(self.dataArray)
+			plt.draw()
 			countY += 1
 		plt.savefig("sampleScan.jpeg")
 
 
 		#after we are done scanning stop Capturing 
-		fc2DestroyImage(rawImage)
-		fc2DestroyImage(convertedImage)
-		fc2StopCapture(self._context)
+		#fc2DestroyImage(rawImage)
+		#fc2DestroyImage(convertedImage)
+		#fc2StopCapture(self._context)
 	
 	def savePicture(self, name, rawImage, convertedImage):
 		fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
