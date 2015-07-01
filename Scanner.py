@@ -48,12 +48,11 @@ class AngleOutsideOfRangeException(Exception):
 def scannerObjects(dct):
 	if "_sample_size_" in dct:
 		return Size(dct["height"], dct["width"])
-	return dct
-	
 	if "_eval_" in dct:
 		for lib in dct["libraries"]:
 			exec("import " + str(lib))
 		return eval(dct["expression"])
+	return dct
 
 class Scanner:
 	#scanner class: needs sampleSize (to calculate the max and min angles for the galvo) and 
@@ -99,9 +98,9 @@ class Scanner:
 		self.maxY = self.sampleSize.height / 2.0
 		self.minY = -self.sampleSize.height / 2.0
 		
-		if hasattr(self, 'xsteps'):
+		if not hasattr(self, 'xsteps'):
 			self.xsteps = numpy.linspace(0, 0.05, 500)
-		if hasattr(self, 'ysteps'):
+		if not hasattr(self, 'ysteps'):
 			self.ysteps = numpy.linspace(0,0.05, 500)
 
 		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
