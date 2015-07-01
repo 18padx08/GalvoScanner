@@ -1,5 +1,6 @@
 from PyDAQmx import *
 import numpy
+import matplotlib.pyplot as plt
 import random
 import time	
 from pyflycam import *
@@ -58,7 +59,7 @@ class Scanner:
 	sensitivityDeg = 0.5
 	
 	# arguments: all units in mm, devicePhi for Xtranslation, devicetheta for Ytranslation
-	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1" devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
+	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1", devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
 		#local variables rerpresenting the sate of the scanner
 		self.currentX = 0
 		self.currentY = 0
@@ -70,14 +71,9 @@ class Scanner:
 		self.lens = lens
 		self.calibrationPhi = 0
 		self.calibrationTheta = 0
-		
-<<<<<<< HEAD
-		self.dataArray = {}
-		
-=======
 		self.devicePhi = devicePhi
 		self.deviceTheta = deviceTheta
->>>>>>> 7ca4569a2b6d04ad87a9f0782b88544dff52a668
+		self.inputDevice = inputDevice
 		#the calibration values, read them from the config file
 		import json
 		import os.path
@@ -98,13 +94,20 @@ class Scanner:
 		self.maxY = self.sampleSize.height / 2.0
 		self.minY = -self.sampleSize.height / 2.0
 		
+		self.xsteps = numpy.linspace(0, 0.05, 500)
+		self.ysteps = numpy.linspace(0,0.05, 500)
+
+		self.dataArray = numpy.zeros((500,500), dtype=numpy.float64)
+		
 		#prepare the output channels
 		self.analog_output = Task()
 		self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
 		#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
 		self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
 		
-		self.analog_output.CreateAIVoltageChan(inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
+		self.analog_input = Task()
+		self.analog_input.CreateAIVoltageChan(self.inputDevice, "", DAQmx_Val_Cfg_Default, -10.0,10.0,DAQmx_Val_Volts, None)
+		self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)		
 		time.sleep(2)
 		
 	#setImage properties
@@ -183,7 +186,7 @@ class Scanner:
 		#write to the output channel
 		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
 		self.analog_output.StartTask()
-		time.sleep(0.0001)
+		
 		self.analog_output.StopTask()
 	def __setPhiRad(self, phiRad):
 		self.__setPhi(180./numpy.pi * phiRad)
@@ -239,32 +242,40 @@ class Scanner:
 		
 	def scanSample(self):
 		#init camera
-		self.initCamera()
+		#self.initCamera()
 		#start capturing pictures
-		fc2StartCapture(self._context)
+		#fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-		rawImage = fc2Image()
-		convertedImage = fc2Image()
-		fc2CreateImage(rawImage)
-		fc2CreateImage(convertedImage)
+		#rawImage = fc2Image()
+		#convertedImage = fc2Image()
+		#fc2CreateImage(rawImage)
+		#fc2CreateImage(convertedImage)
 		
 		self.setPoint(self.minX, self.minY)
-		for i in numpy.linspace(0,self.maxY, 10):
-			for o in numpy.linspace(0, self.maxX, 10):
+		countX = 0
+		countY = 0
+		for i in self.ysteps:
+			countX = 0
+			for o in self.xsteps:
 				#get picture
-				fc2RetrieveBuffer(self._context, rawImage)
-				ts = fc2GetImageTimeStamp(rawImage)
+				#fc2RetrieveBuffer(self._context, rawImage)
+				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
-				time.sleep(0.01)
+				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
 				read32 = int32()
-				self.analog_output.ReadAnalogF64(-1,10.0,DAQmx_Val_GroupByChannel, data, 100, byref(read32), None)
-				self.dataArray[o][i] = numpy.mean(data)
+				self.analog_input.StartTask()
+				self.analog_input.ReadAnalogF64(100,5,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
+				self.analog_input.StopTask()
+				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
+				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5e-3 else 0
 				#go one step further			
-				self.setPoint(self.minX + o, self.minY + i)
-		print(self.dataArray)
+				countX += 1
+				self.setPoint( o, i)
+			countY += 1
+		plt.imshow(self.dataArray)
+		plt.savefig("sampleScan.jpeg")
 
 
 		#after we are done scanning stop Capturing 

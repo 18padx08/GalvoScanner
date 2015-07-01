@@ -175,7 +175,7 @@ class fc2Image(Structure):
 
 #property struct
 class fc2Property(Structure):
-	_fields_ = [("type", fc2PropertyType), ("present", c_int), ("absControl", c_int), ("onePush", c_int), ("onOff", c_int), ("autoManualMode", c_int), ("valueA", c_uint), ("valueB", c_uint)
+	_fields_ = [("type", fc2PropertyType), ("present", c_int), ("absControl", c_int), ("onePush", c_int), ("onOff", c_int), ("autoManualMode", c_int), ("valueA", c_uint), ("valueB", c_uint),
 				("absValue", c_float), ("reserved", 8*c_uint)]
 ###############################################################################################################
 
