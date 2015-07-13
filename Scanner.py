@@ -63,7 +63,7 @@ class Scanner:
 	sensitivityDeg = 0.5
 	
 	# arguments: all units in mm, devicePhi for Xtranslation, devicetheta for Ytranslation
-	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1", devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0"):
+	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1", devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0", configFile = "scanner_config.cfg"):
 		#local variables rerpresenting the sate of the scanner
 		self.currentX = 0
 		self.currentY = 0
@@ -81,8 +81,8 @@ class Scanner:
 		#the calibration values, read them from the config file
 		import json
 		import os.path
-		if os.path.isfile("scanner_config.cfg"):
-			self._config = json.loads(open("scanner_config.cfg").read(), object_hook=scannerObjects)
+		if os.path.isfile(configFile):
+			self._config = json.loads(open(configFile).read(), object_hook=scannerObjects)
 		else:
 			self._config = {}
 			self._config["settings"] = {}
@@ -117,10 +117,10 @@ class Scanner:
 			self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
 		except(Exception):
 			print("Could not init DaqMX")
-		self.initCamera()
+		#self.initCamera()
 		
-		if(hasattr(self, "imageSettings")):
-			self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
+		#if(hasattr(self, "imageSettings")):
+		#	self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 		
 	#setImage properties
@@ -286,7 +286,7 @@ class Scanner:
 				self.analog_input.StartTask()
 				self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
 				self.analog_input.StopTask()
-				print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
+				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5.0e-5 else 0
 				#go one step further			
 				countX += 1
@@ -294,7 +294,7 @@ class Scanner:
 				imgplot.set_data(self.dataArray)
 				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
 				
-				plt.pause(0.05)
+				plt.pause(0.000005)
 				plt.draw()
 			countY += 1
 		plt.show()
