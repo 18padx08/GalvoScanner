@@ -158,6 +158,8 @@ class Scanner:
 		if "settings" in  self._config:
 			for key in self._config["settings"]:
 				setattr(self, key, self._config["settings"][key])
+		if hasattr(self, "focus"):
+			self.setFocus(self.focus)
 	#setImage properties
 	def setImageProperties(self, gain=0.0, shutter=10.0):
 		gainProp = fc2Property()
