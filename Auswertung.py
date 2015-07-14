@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
+import scipy.optimize
 
 #smoothing function
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
@@ -80,13 +81,14 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 dataArray = np.load("scanData.npy")
 
 #rotate data
-rotatedDataArray = ndi.interpolation.rotate(dataArray, 14)
+rotatedDataArray = ndi.interpolation.rotate(dataArray, -15)
 
 #invert the dataArray such that we get a peak for a intensity (remember negative Voltage means high intensity)
 rotatedDataArray *= -1
 
 #shift the dataArray so we have our gausians around 0
 intens = rotatedDataArray[245,:] - np.mean(rotatedDataArray)
+intens = [x for x in intens if x > 0]
 smoothDataArray = savitzky_golay(intens, 51, 3)
 
 #now calculate the derivative
@@ -95,14 +97,24 @@ diffRotatedUnSmoothDataArray = np.diff(intens)
 
 mask = np.r_[True, diffRotatedDataArray[1:] < diffRotatedDataArray[:-1]] & np.r_[diffRotatedDataArray[:-1] < diffRotatedDataArray[1:], True]
 
+plt.imshow(rotatedDataArray)
+plt.show()
 #show smooth data array
 plt.plot(smoothDataArray)
 plt.plot(intens)
 plt.show()
 
 #show derivative
-plt.plot(diffRotatedDataArray, linewidth=4)
+plt.plot(diffRotatedDataArray, linewidth=2)
 plt.plot(diffRotatedUnSmoothDataArray)
-plt.plot(mask)
 plt.show()
 
+#plot the dependency of peaks to voltage
+
+peaks = [68, 274, 411, 548]
+peaksVoltage = [66, 160, 248, 339]
+fit = np.polyfit(peaksVoltage, peaks, 1)
+fitCurve = np.poly1d(fit)
+plt.plot(peaksVoltage, peaks , linestyle="", marker="*")
+plt.plot(peaksVoltage, fitCurve(peaksVoltage))
+plt.show()
