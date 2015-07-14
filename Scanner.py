@@ -10,6 +10,18 @@ from pyflycam import *
 #PIL.ImageChops.composite(image1, image2, mask)
 
 #################################################################################
+
+#container class for holding attributes
+class EmptyObject:
+	pass
+
+#helper class for callable list
+class CallableList(list):
+	def __call__(self):
+		for entry in self:
+			entry()
+	
+
 #helper class for Sample size
 class Size:
 	def __init__(self, height, width):
@@ -43,14 +55,19 @@ class Lens:
 class AngleOutsideOfRangeException(Exception):
 	pass
 
+class VoltageCannotBeNegativeException(Exception):
+	pass
 
+class ConfigFileNotFoundException(Exception):
+	pass
 #################################################################
 def scannerObjects(dct):
 	if "_sample_size_" in dct:
 		return Size(dct["height"], dct["width"])
 	if "_eval_" in dct:
-		for lib in dct["libraries"]:
-			exec("import " + str(lib))
+		if "libraries" in dct:
+			for lib in dct["libraries"]:
+				exec("import " + str(lib))
 		return eval(dct["expression"])
 	return dct
 
@@ -69,6 +86,7 @@ class Scanner:
 		self.currentY = 0
 		self.currentVoltagePhi = 0
 		self.currentVoltageTheta = 0
+		self.currentPiezoVoltage = 0
 		self.sampleSize = sampleSize
 		self.currentGalvoPhi = 0
 		self.currentGalvoTheta = 0
@@ -87,6 +105,10 @@ class Scanner:
 			self._config = {}
 			self._config["settings"] = {}
 		if "settings" in  self._config:
+			#foreach import config load the variables (same names get overwritten)
+			if "imports" in self._config:
+				for cfgfile in self._config["imports"]:
+					self.loadConfig(cfgfile)
 			for key in self._config["settings"]:
 				setattr(self, key, self._config["settings"][key])
 		
@@ -108,7 +130,7 @@ class Scanner:
 		#prepare the output channels
 		try:
 			self.analog_output = Task()
-			self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta]),"",-10.0,10.0,DAQmx_Val_Volts,None)
+			self.analog_output.CreateAOVoltageChan(",".join([self.devicePhi, self.deviceTheta, self.piezoDevice]),"",-10.0,10.0,DAQmx_Val_Volts,None)
 			#self.analog_output.CreateAOVoltageChan(deviceTheta,"",-10.0,10.0,DAQmx_Val_Volts,None)
 			self.analog_output.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)
 			
@@ -118,11 +140,24 @@ class Scanner:
 		except(Exception):
 			print("Could not init DaqMX")
 		#self.initCamera()
-		
+				#if we have a focus point set it
+		if hasattr(self, "focus"):
+			self.setFocus(self.focus)
 		#if(hasattr(self, "imageSettings")):
 		#	self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
-		
+	
+	#load config file
+	def loadConfig(self, configFile="scanner_config.cfg"):
+		import json
+		import os.path
+		if os.path.isfile(configFile):
+			self._config = json.loads(open(configFile).read(), object_hook=scannerObjects)
+		else:
+			raise(ConfigFileNotFoundException)
+		if "settings" in  self._config:
+			for key in self._config["settings"]:
+				setattr(self, key, self._config["settings"][key])
 	#setImage properties
 	def setImageProperties(self, gain=0.0, shutter=10.0):
 		gainProp = fc2Property()
@@ -139,7 +174,61 @@ class Scanner:
 		
 		fc2SetProperty(self._context, gainProp)
 		fc2SetProperty(self._context, shutterProp)
+	def startScanhook(self, hook):
+		getattr(self, hook)()
+	
+	def callbackFactory(self, callback, args):
+		return lambda: getattr(self, callback.strip())(args)
+	
+	def parseHook(self, hookFile):
+		keywords = {"print" : lambda args: print(args) }
+		tmpHookName = hookFile
+		#compile a regular expression, so that we have fname(**args) and then call the appropriate function
+		#or match variable declarations var = value
+		import re
+		functionCallPattern = re.compile("\w+\s*\([\s\w\,\.\_\-\!\$\?]*\)")
+		assignPattern = re.compile("\w+\s*=\s*\w+")
+		tmpObject = EmptyObject()
+		body = CallableList()
+		for line in open(hookFile).readlines():
+			match = functionCallPattern.search(line)
+			if match is not None:
+				#we got a function call, so split at the first bracket
+				index = match.group().find("(") 
+				if  index > -1:
+					functionName = match.group()[:index]
+					if hasattr(self, functionName):
+						arguments = match.group()[index+1:-1]
+						#call function if it is a class funcion
+						if(arguments == ""):
+							args = None
+						else:
+							args = arguments.split(",")
+						#print(arguments)
+						if args is not None:
+							body += [self.callbackFactory(functionName, *args)]
+						else:
+							body += [getattr(self, functionName)]
+					else:
+						#see if we have defined a own call
+						print(functionName)
+						if functionName in keywords:
+							print("custom function")
+							arguments = match.group()[index+1:-1]
+							#call function if it is a class funcion
+							args = ",".join(arguments)
+							body += [lambda: keywords[functionName](args)]
+			match = assignPattern.search(line)
+			print(match)
+			if match is not None:
+				#we have a assignment
+				name, value = match.group().split("=")
+				setattr(tmpObject, name.strip(), value.strip())
 			
+			if hasattr(tmpObject, "name"):
+				tmpHookName = getattr(tmpObject, "name")
+			setattr(self, tmpHookName, body)
+				
 	#get state of galvo -> return angle in degree
 	def getAnglePhiDegree(self):
 		return self.currentGalvoPhi * (180./numpy.pi)
@@ -186,12 +275,29 @@ class Scanner:
 		self.currentX = 0
 		self.currentY = 0		
 	
+	def setFocus(self, voltage):
+		if voltage < 0:
+			raise(VoltageCannotBeNegativeException)
+		data = numpy.zeros((300,), dtype=numpy.float64)
+		data[:99] = self.currentVoltagePhi
+		data[99:199] = self.currentVoltageTheta
+		data[199:] = voltage
+		#set the state of the object
+		self.currentPiezoVoltage = voltage
+		
+		#write to the output channel
+		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
+		self.analog_output.StartTask()
+		
+		self.analog_output.StopTask()
+		
 	#setAngles for the galvo (enter values in degree), private: use setX and setY for public access
 	def __setPhi(self, phi):
 		voltage = self.sensitivityDeg * phi + self.calibrationPhi
-		data = numpy.zeros((200,), dtype=numpy.float64)
+		data = numpy.zeros((300,), dtype=numpy.float64)
 		data[:99] = voltage
-		data[99:] = self.currentVoltageTheta
+		data[99:199] = self.currentVoltageTheta
+		data[199:] = self.currentPiezoVoltage
 		#set the state of the object
 		self.currentVoltagePhi = voltage
 		self.currentGalvoPhi = phi
@@ -206,9 +312,10 @@ class Scanner:
 		
 	def __setTheta(self, theta):
 		voltage = self.sensitivityDeg * theta + self.calibrationTheta
-		data = numpy.zeros((200,), dtype=numpy.float64)
+		data = numpy.zeros((300,), dtype=numpy.float64)
 		data[:99] = self.currentVoltagePhi
-		data[99:] = voltage
+		data[99:199] = voltage
+		data[199:] = self.currentPiezoVoltage
 		
 		#set the state of the object
 		self.currentVoltageTheta = voltage
@@ -255,7 +362,10 @@ class Scanner:
 	def setPoint(self, x, y):
 		self.setX(x)
 		self.setY(y)
-		
+	
+	def saveState(self, name="tmpArray"):
+		numpy.save(name, self.dataArray)
+	
 	def scanSample(self):
 		#start capturing pictures
 		#fc2StartCapture(self._context)
