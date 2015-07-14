@@ -269,9 +269,10 @@ class Scanner:
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
-		imgplot = plt.imshow(self.dataArray)
+		plt.ion()
+		imgplot = plt.imshow(self.dataArray, animated=True)
 		imgplot.set_interpolation('none')
-		plt.show(block = False)
+		plt.colorbar()
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
@@ -285,14 +286,18 @@ class Scanner:
 				self.analog_input.StartTask()
 				self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
 				self.analog_input.StopTask()
-				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
-				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5e-3 else 0
+				print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
+				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5.0e-5 else 0
 				#go one step further			
 				countX += 1
 				self.setPoint( o, i)
-			imgplot.set_data(self.dataArray)
-			plt.draw()
+				imgplot.set_data(self.dataArray)
+				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
+				
+				plt.pause(0.05)
+				plt.draw()
 			countY += 1
+		plt.show()
 		plt.savefig("sampleScan.jpeg")
 
 
