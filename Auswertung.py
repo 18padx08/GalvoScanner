@@ -111,7 +111,7 @@ plt.show()
 
 #plot the dependency of peaks to voltage
 
-peaks = [68, 274, 411, 548]
+peaks = [72, 278, 415, 552]
 peaksVoltage = [66, 160, 248, 339]
 fit = np.polyfit(peaksVoltage, peaks, 1)
 fitCurve = np.poly1d(fit)

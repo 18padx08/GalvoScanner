@@ -32,6 +32,6 @@ loadConfig(highres245_0.8.cfg)
 scanSample()
 saveState(focus0.8.npy)
 
-loadConfig(highres245_0.8.cfg)
+loadConfig(highres245_0.9.cfg)
 scanSample()
-saveState(focus0.8.npy)
+saveState(focus0.9.npy)
