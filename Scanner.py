@@ -390,7 +390,7 @@ class Scanner:
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
-				#get picture
+				#get pictur
 				#fc2RetrieveBuffer(self._context, rawImage)
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
