@@ -58,7 +58,7 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     try:
         window_size = np.abs(np.int(window_size))
         order = np.abs(np.int(order))
-    except ValueError, msg:
+    except ValueError:
         raise ValueError("window_size and order have to be of type int")
     if window_size % 2 != 1 or window_size < 1:
         raise TypeError("window_size size must be a positive odd number")
@@ -94,8 +94,12 @@ smooth = []
 i = 0
 for curfoc in foc:
 	tmpFoc = ndi.interpolation.rotate(curfoc, -14)
-	plt.plot(savitzky_golay(tmpFoc[0,:], 51, 3) * -1, label = str(i))
+	plt.plot(savitzky_golay(tmpFoc[88,:], 51, 3) * -1, label = str(i))
 	i+=1
 
 plt.show()
 
+for curfoc in foc:
+	tmpFoc = ndi.interpolation.rotate(curfoc, -14)
+	plt.imshow(tmpFoc, label = str(i))
+plt.show()
