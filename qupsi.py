@@ -26,7 +26,7 @@ def TDC_getHistogram_Params(binWidth, binCount):
 	return windll.tdcbase.TDC_getHistogram_Params(byref(binWidth), byref(binCount))
 
 def TDC_getCoincCounters(data):
-	return TDC_getCoincCounters(byref(data))
+	return windll.tdcbase.TDC_getCoincCounters(data)
 
 #helper functions
 

@@ -380,7 +380,7 @@ class Scanner:
 		#convertedImage = fc2Image()
 		#fc2CreateImage(rawImage)
 		#fc2CreateImage(convertedImage)
-		TDC_init(-1)
+		print(str(TDC_init(-1)))
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
@@ -396,14 +396,17 @@ class Scanner:
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
 				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
-				tmpBuffer = numpy.zeros((19,), dtype=numpy.float64)
-				TDC_getCoincCounters(tmpBuffer)
+				tmpB = c_int *19
+				tmpBuffer = tmpB()
+				ret = TDC_getCoincCounters(tmpBuffer)
+				
 				#read32 = int32()
 				#self.analog_input.StartTask()
 				#self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
 				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
-				self.dataArray[countY][countX] = tmpBuffer[4] + tmpBuffer[5]
+				self.dataArray[countY][countX] = numpy.sum(tmpBuffer)
+				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
 				self.setPoint( o, i)
