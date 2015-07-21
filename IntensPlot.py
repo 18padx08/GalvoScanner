@@ -93,8 +93,7 @@ colors = ["r-", "b-", "g-", "y", "p-"]
 smooth = []
 i = 0
 for curfoc in foc:
-	tmpFoc = ndi.interpolation.rotate(curfoc, -14)
-	plt.plot(savitzky_golay(tmpFoc[0,:], 51, 3) * -1, label = str(i))
+	plt.plot(savitzky_golay(curfoc[0,:], 51, 3) * -1, label = str(i))
 	i+=1
 
 plt.show()

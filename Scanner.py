@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import random
 import time	
 from pyflycam import *
+from qupsi import *
 
 #pillow.readthedocs.org/ for image manipulation
 
@@ -379,6 +380,7 @@ class Scanner:
 		#convertedImage = fc2Image()
 		#fc2CreateImage(rawImage)
 		#fc2CreateImage(convertedImage)
+		TDC_init(-1)
 		
 		self.setPoint(self.minX, self.minY)
 		countX = 0
@@ -395,13 +397,14 @@ class Scanner:
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
 				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
-				tmpBuffer = numpy.zeros((100,), dtype=numpy.float64)
-				read32 = int32()
-				self.analog_input.StartTask()
-				self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
-				self.analog_input.StopTask()
+				tmpBuffer = numpy.zeros((19,), dtype=numpy.float64)
+				TDC_getCoincCounters(tmpBuffer)
+				#read32 = int32()
+				#self.analog_input.StartTask()
+				#self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
+				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
-				self.dataArray[countY][countX] = numpy.mean(tmpBuffer) if abs(numpy.mean(tmpBuffer)) > 5.0e-5 else 0
+				self.dataArray[countY][countX] = tmpBuffer[4] + tmpBuffer[5]
 				#go one step further			
 				countX += 1
 				self.setPoint( o, i)
@@ -413,6 +416,7 @@ class Scanner:
 			countY += 1
 		plt.show()
 		plt.savefig("sampleScan.jpeg")
+		TDC_deInit()
 
 
 		#after we are done scanning stop Capturing 
