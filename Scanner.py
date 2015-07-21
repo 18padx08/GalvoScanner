@@ -140,12 +140,12 @@ class Scanner:
 			self.analog_input.CfgSampClkTiming("",10000.0,DAQmx_Val_Rising,DAQmx_Val_ContSamps,100)	
 		except(Exception):
 			print("Could not init DaqMX")
-		#self.initCamera()
+		self.initCamera()
 				#if we have a focus point set it
 		if hasattr(self, "focus"):
 			self.setFocus(self.focus)
-		#if(hasattr(self, "imageSettings")):
-		#	self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
+		if(hasattr(self, "imageSettings")):
+			self.setImageProperties(self.imageSettings['gain'], self.imageSettings['shutter'])	
 		time.sleep(2)
 	
 	#load config file
@@ -373,15 +373,15 @@ class Scanner:
 	
 	def scanSample(self):
 		#start capturing pictures
-		#fc2StartCapture(self._context)
+		fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
+<<<<<<< HEAD
 		#rawImage = fc2Image()
 		#convertedImage = fc2Image()
 		#fc2CreateImage(rawImage)
 		#fc2CreateImage(convertedImage)
 		TDC_init(-1)
-		
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
@@ -392,7 +392,7 @@ class Scanner:
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
-				#get picture
+				#get pictur
 				#fc2RetrieveBuffer(self._context, rawImage)
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
@@ -411,7 +411,9 @@ class Scanner:
 				imgplot.set_data(self.dataArray)
 				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
 				
-				plt.pause(0.000005)
+				plt.pause(0.00005)
+				#import time
+				#time.sleep(1)
 				plt.draw()
 			countY += 1
 		plt.show()
@@ -420,9 +422,9 @@ class Scanner:
 
 
 		#after we are done scanning stop Capturing 
-		#fc2DestroyImage(rawImage)
-		#fc2DestroyImage(convertedImage)
-		#fc2StopCapture(self._context)
+		fc2DestroyImage(rawImage)
+		fc2DestroyImage(convertedImage)
+		fc2StopCapture(self._context)
 	
 	def savePicture(self, name, rawImage, convertedImage):
 		fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
