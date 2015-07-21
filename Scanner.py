@@ -376,7 +376,6 @@ class Scanner:
 		fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-<<<<<<< HEAD
 		#rawImage = fc2Image()
 		#convertedImage = fc2Image()
 		#fc2CreateImage(rawImage)
