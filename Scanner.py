@@ -385,7 +385,7 @@ class Scanner:
 		plt.scatter(self.dataArray)
 		plt.hist2d(self.dataArray)
 		
-	def plot3dmap(self, data):
+	def plot3dmap(self, data, maskvalue=50000):
 		if len(data) <= 0:
 			return
 		zlayers = []
@@ -405,6 +405,7 @@ class Scanner:
 		x = x.reshape(vol,)
 		y = y.reshape(vol,)
 		z = z.reshape(vol,)
+		print(x,y,z)
 		#for xval in numpy.linspace(1,xdim,xdim):
 		#	print(len(ydim* zdim *[xval]))
 		#	x = numpy.append(x,ydim* zdim *[xval])
@@ -414,8 +415,8 @@ class Scanner:
 #			z = numpy.append(z,xdim *ydim * [zval])
 			
 		c = numpy.array(zlayers)
-		c = c.reshape(xdim*ydim*zdim,)
-		c = numpy.ma.masked_less(c, numpy.max(c) - numpy.max(c)*0.1)
+		c = c.reshape(xdim*ydim*zdim,order='F')
+		c = numpy.ma.masked_less(c, maskvalue)
 		
 		print("shapes", x.shape, y.shape,z.shape, c.shape)
 		#now we have prepared our data lets plot
@@ -425,7 +426,8 @@ class Scanner:
 		
 		fig = plt.figure(1)
 		ax = fig.add_subplot(111, projection='3d') 
-		ax.scatter(x,y,z,c=c, cmap=plt.hot())
+		sc = ax.scatter(x,y,z,c=c, cmap=plt.hot())
+		plt.colorbar(sc)
 		plt.show()
 		plt.savefig("3dplot.jpeg")
 
@@ -491,6 +493,24 @@ class Scanner:
 		fc2DestroyImage(convertedImage)
 		fc2StopCapture(self._context)
 	
+	def takePicture(self, name):
+		if not hasattr(self, "_context"):
+			self.initCamera()
+		
+		fc2StartCapture(self._context)
+		#create the two pictures one for getting input the other to save
+		rawImage = fc2Image()
+		convertedImage = fc2Image()
+		fc2CreateImage(rawImage)
+		fc2CreateImage(convertedImage)
+		
+		fc2RetrieveBuffer(self._context, rawImage)
+		self.savePicture(name, rawImage, convertedImage)
+		
+		fc2DestroyImage(rawImage)
+		fc2DestroyImage(convertedImage)
+		fc2StopCapture(self._context)
+		
 	def savePicture(self, name, rawImage, convertedImage):
 		fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
 		
