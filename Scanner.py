@@ -192,7 +192,7 @@ class Scanner:
 		#compile a regular expression, so that we have fname(**args) and then call the appropriate function
 		#or match variable declarations var = value
 		import re
-		functionCallPattern = re.compile("\w+\s*\([\s\w\,\.\_\-\!\$\?]*\)")
+		functionCallPattern = re.compile("\w+\s*\([\s\w\/\,\.\_\-\!\$\?]*\)")
 		assignPattern = re.compile("\w+\s*=\s*\w+")
 		tmpObject = EmptyObject()
 		body = CallableList()
@@ -212,7 +212,10 @@ class Scanner:
 							args = arguments.split(",")
 						#print(arguments)
 						if args is not None:
-							body += [self.callbackFactory(functionName, *args)]
+							if functionName == "plot3dmap":
+								body += [self.callbackFactory(functionName, args)]
+							else:
+								body += [self.callbackFactory(functionName, *args)]
 						else:
 							body += [getattr(self, functionName)]
 					else:
@@ -372,7 +375,7 @@ class Scanner:
 	
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
-		numpy.savetxt(name, self.dataArray, delimiter=',')
+		numpy.savetxt(name+".csv", self.dataArray, delimiter=',')
 	
 	def goTo(self, x, y):
 		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
@@ -382,24 +385,24 @@ class Scanner:
 		plt.scatter(self.dataArray)
 		plt.hist2d(self.dataArray)
 		
-	def plot3dmap(self, **data):
+	def plot3dmap(self, data):
 		if len(data) <= 0:
 			return
 		zlayers = []
 		for entry in data:
 			#read each file and load it
-			zlayers += np.load(entry)
+			zlayers += numpy.load(entry)
 		#prepare the x-axes (since we have a rectangle we have height times the same x value)
 		x = []
 		y = []
-		z = np.linspace(0,len(zlayers))
+		z = numpy.linspace(0,len(zlayers))
 		xdim = zlayers[0].shape[0]
 		ydim = zlayers[0].shape[1]
 		for xval in np.linspace(0,xdim):
 			x += ydim *[xval]
-		for yval in np.linspace(0,ydim):
+		for yval in numpy.linspace(0,ydim):
 			y += xdim * [yval]
-		c = np.array(zlayers)
+		c = numpy.array(zlayers)
 		c = c.reshape(xdim*ydim*len(zlayers),1,1)
 		
 		#now we have prepared our data lets plot

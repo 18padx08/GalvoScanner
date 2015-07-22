@@ -28,4 +28,4 @@ loadConfig(sample3d/sample7.cfg)
 scanSample()
 saveState(sample3d/sample7.npy)
 
-plot3dmap(sample1.cfg,sample2.cfg,sample3.cfg,sample4.cfg,sample5.cfg,sample6.cfg,sample7.cfg) 
+plot3dmap(sample1.npy,sample2.npy,sample3.npy,sample4.npy,sample5.npy,sample6.npy,sample7.npy) 
