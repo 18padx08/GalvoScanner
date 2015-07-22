@@ -391,20 +391,33 @@ class Scanner:
 		zlayers = []
 		for entry in data:
 			#read each file and load it
-			zlayers += numpy.load(entry)
+			zlayers += [numpy.load(entry)]
 		#prepare the x-axes (since we have a rectangle we have height times the same x value)
-		x = []
-		y = []
-		z = numpy.linspace(0,len(zlayers))
+		
 		xdim = zlayers[0].shape[0]
 		ydim = zlayers[0].shape[1]
-		for xval in np.linspace(0,xdim):
-			x += ydim *[xval]
-		for yval in numpy.linspace(0,ydim):
-			y += xdim * [yval]
+		zdim = len(zlayers)
+		x_ = numpy.linspace(1,xdim, xdim)
+		y_ = numpy.linspace(1,ydim, ydim)
+		z_ = numpy.linspace(1,zdim, zdim)
+		x,y,z = numpy.meshgrid(x_,y_,z_, indexing='ij')
+		vol = xdim * ydim * zdim
+		x = x.reshape(vol,)
+		y = y.reshape(vol,)
+		z = z.reshape(vol,)
+		#for xval in numpy.linspace(1,xdim,xdim):
+		#	print(len(ydim* zdim *[xval]))
+		#	x = numpy.append(x,ydim* zdim *[xval])
+		#for yval in numpy.linspace(1,ydim,ydim):
+	#		y = numpy.append(y,xdim *zdim * [yval])
+#		for zval in numpy.linspace(1,zdim,zdim):
+#			z = numpy.append(z,xdim *ydim * [zval])
+			
 		c = numpy.array(zlayers)
-		c = c.reshape(xdim*ydim*len(zlayers),1,1)
+		c = c.reshape(xdim*ydim*zdim,)
+		c = numpy.ma.masked_less(c, numpy.max(c) - numpy.max(c)*0.1)
 		
+		print("shapes", x.shape, y.shape,z.shape, c.shape)
 		#now we have prepared our data lets plot
 		from mpl_toolkits.mplot3d import Axes3D 
 		import matplotlib.pyplot as plt 
@@ -412,8 +425,8 @@ class Scanner:
 		
 		fig = plt.figure(1)
 		ax = fig.add_subplot(111, projection='3d') 
-		ax.scatter(x,y,z,c=c, colormap=plt.hot())
-		#plt.show()
+		ax.scatter(x,y,z,c=c, cmap=plt.hot())
+		plt.show()
 		plt.savefig("3dplot.jpeg")
 
 		
