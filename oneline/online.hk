@@ -1,42 +1,42 @@
 name = oneline
 
-loadConfig(oneline/zline1.cfg)
+loadConfig(oneline/zline.1.cfg)
 scanSample()
 saveState(oneline/zline1.npy)
 
-loadConfig(oneline/zline2.cfg)
+loadConfig(oneline/zline.2.cfg)
 scanSample()
 saveState(oneline/zline2.npy)
 
-loadConfig(oneline/zline3.cfg)
+loadConfig(oneline/zline.3.cfg)
 scanSample()
 saveState(oneline/zline3.npy)
 
-loadConfig(oneline/zline4.cfg)
+loadConfig(oneline/zline.4.cfg)
 scanSample()
 saveState(oneline/zline4.npy)
 
-loadConfig(oneline/zline5.cfg)
+loadConfig(oneline/zline.5.cfg)
 scanSample()
 saveState(oneline/zline5.npy)
 
-loadConfig(oneline/zline6.cfg)
+loadConfig(oneline/zline.6.cfg)
 scanSample()
 saveState(oneline/zline6.npy)
 
-loadConfig(oneline/zline7.cfg)
+loadConfig(oneline/zline.7.cfg)
 scanSample()
 saveState(oneline/zline7.npy)
 
-loadConfig(oneline/zline8.cfg)
+loadConfig(oneline/zline.8.cfg)
 scanSample()
 saveState(oneline/zline8.npy)
 
-loadConfig(oneline/zline9.cfg)
+loadConfig(oneline/zline.9.cfg)
 scanSample()
 saveState(oneline/zline9.npy)
 
-loadConfig(oneline/zline10.cfg)
+loadConfig(oneline/zline.10.cfg)
 scanSample()
 saveState(oneline/zline10.npy)
 
