@@ -381,7 +381,39 @@ class Scanner:
 		plt.clf()
 		plt.scatter(self.dataArray)
 		plt.hist2d(self.dataArray)
-	
+		
+	def plot3dmap(self, **data):
+		if len(data) <= 0:
+			return
+		zlayers = []
+		for entry in data:
+			#read each file and load it
+			zlayers += np.load(entry)
+		#prepare the x-axes (since we have a rectangle we have height times the same x value)
+		x = []
+		y = []
+		z = np.linspace(0,len(zlayers))
+		xdim = zlayers[0].shape[0]
+		ydim = zlayers[0].shape[1]
+		for xval in np.linspace(0,xdim):
+			x += ydim *[xval]
+		for yval in np.linspace(0,ydim):
+			y += xdim * [yval]
+		c = np.array(zlayers)
+		c = c.reshape(xdim*ydim*len(zlayers),1,1)
+		
+		#now we have prepared our data lets plot
+		from mpl_toolkits.mplot3d import Axes3D 
+		import matplotlib.pyplot as plt 
+		import numpy as np 
+		
+		fig = plt.figure(1)
+		ax = fig.add_subplot(111, projection='3d') 
+		ax.scatter(x,y,z,c=c, colormap=plt.hot())
+		#plt.show()
+		plt.savefig("3dplot.jpeg")
+
+		
 	def scanSample(self):
 		#start capturing pictures
 		fc2StartCapture(self._context)
