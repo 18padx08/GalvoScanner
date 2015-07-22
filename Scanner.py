@@ -83,6 +83,7 @@ class Scanner:
 	# arguments: all units in mm, devicePhi for Xtranslation, devicetheta for Ytranslation
 	def __init__(self, sampleSize = None,beamDiameter = 5, lens = Lens(1.3,1.5),inputDevice="Dev2/ai1", devicePhi = "Dev2/ao1", deviceTheta = "Dev2/ao0", configFile = "scanner_config.cfg"):
 		#local variables rerpresenting the sate of the scanner
+		self.testData = []
 		self.currentX = 0
 		self.currentY = 0
 		self.currentVoltagePhi = 0
@@ -300,9 +301,10 @@ class Scanner:
 	def __setPhi(self, phi):
 		voltage = self.sensitivityDeg * phi + self.calibrationPhi
 		data = numpy.zeros((300,), dtype=numpy.float64)
-		data[:99] = voltage
-		data[99:199] = self.currentVoltageTheta
-		data[199:] = self.currentPiezoVoltage
+		data[:100] = voltage
+		data[100:200] = self.currentVoltageTheta
+		data[200:] = self.currentPiezoVoltage
+		self.testData = data
 		#set the state of the object
 		self.currentVoltagePhi = voltage
 		self.currentGalvoPhi = phi
@@ -314,14 +316,14 @@ class Scanner:
 		self.analog_output.StopTask()
 	def __setPhiRad(self, phiRad):
 		self.__setPhi(180./numpy.pi * phiRad)
-		
+	
 	def __setTheta(self, theta):
 		voltage = self.sensitivityDeg * theta + self.calibrationTheta
 		data = numpy.zeros((300,), dtype=numpy.float64)
-		data[:99] = self.currentVoltagePhi
-		data[99:199] = voltage
-		data[199:] = self.currentPiezoVoltage
-		
+		data[:100] = self.currentVoltagePhi
+		data[100:200] = voltage
+		data[200:] = self.currentPiezoVoltage
+		self.testData = data
 		#set the state of the object
 		self.currentVoltageTheta = voltage
 		self.currentGalvoTheta = theta
