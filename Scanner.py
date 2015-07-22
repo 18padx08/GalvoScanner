@@ -373,9 +373,17 @@ class Scanner:
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
 	
+	def goTo(self, x, y):
+		self.setPoint(self.ysteps[int(y)], self.xsteps[int(x)])
+	
+	def showHistogram():
+		plt.clear()
+		plt.scatter(self.dataArray)
+		plt.hist2d(self.dataArray)
+	
 	def scanSample(self):
 		#start capturing pictures
-		fc2StartCapture(self._context)
+		#fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
 		#rawImage = fc2Image()
@@ -386,6 +394,7 @@ class Scanner:
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
+		plt.clear()
 		plt.ion()
 		imgplot = plt.imshow(self.dataArray, animated=True)
 		imgplot.set_interpolation('none')
@@ -398,6 +407,7 @@ class Scanner:
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
 				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
+				time.sleep(0.1)
 				tmpB = c_int *19
 				tmpBuffer = tmpB()
 				ret = TDC_getCoincCounters(tmpBuffer)
@@ -418,10 +428,11 @@ class Scanner:
 				plt.pause(0.00005)
 				#import time
 				#time.sleep(1)
-				plt.draw()
+				#plt.draw()
 			countY += 1
-		plt.show()
+		#plt.show()
 		plt.savefig("sampleScan.jpeg")
+		plt.ioff()
 		TDC_deInit()
 
 
