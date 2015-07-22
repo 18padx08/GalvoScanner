@@ -372,29 +372,30 @@ class Scanner:
 	
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
+		numpy.savetxt(name, self.dataArray, delimiter=',')
 	
 	def goTo(self, x, y):
-		self.setPoint(self.ysteps[int(y)], self.xsteps[int(x)])
+		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
 	
-	def showHistogram():
-		plt.clear()
+	def showHistogram(self):
+		plt.clf()
 		plt.scatter(self.dataArray)
 		plt.hist2d(self.dataArray)
 	
 	def scanSample(self):
 		#start capturing pictures
-		#fc2StartCapture(self._context)
+		fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-		#rawImage = fc2Image()
-		#convertedImage = fc2Image()
-		#fc2CreateImage(rawImage)
-		#fc2CreateImage(convertedImage)
+		rawImage = fc2Image()
+		convertedImage = fc2Image()
+		fc2CreateImage(rawImage)
+		fc2CreateImage(convertedImage)
 		print(str(TDC_init(-1)))
 		self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
-		plt.clear()
+		plt.clf()
 		plt.ion()
 		imgplot = plt.imshow(self.dataArray, animated=True)
 		imgplot.set_interpolation('none')
@@ -403,10 +404,8 @@ class Scanner:
 			countX = 0
 			for o in self.xsteps:
 				#get pictur
-				#fc2RetrieveBuffer(self._context, rawImage)
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				time.sleep(0.1)
 				tmpB = c_int *19
 				tmpBuffer = tmpB()
@@ -418,6 +417,9 @@ class Scanner:
 				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.sum(tmpBuffer)
+				if numpy.sum(tmpBuffer) > 50000:
+					fc2RetrieveBuffer(self._context, rawImage)
+					self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
@@ -428,7 +430,7 @@ class Scanner:
 				plt.pause(0.00005)
 				#import time
 				#time.sleep(1)
-				#plt.draw()
+				plt.draw()
 			countY += 1
 		#plt.show()
 		plt.savefig("sampleScan.jpeg")
