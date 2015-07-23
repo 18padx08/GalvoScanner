@@ -288,9 +288,9 @@ class Scanner:
 		if voltage < 0:
 			raise(VoltageCannotBeNegativeException)
 		data = numpy.zeros((300,), dtype=numpy.float64)
-		data[:99] = self.currentVoltagePhi
-		data[99:199] = self.currentVoltageTheta
-		data[199:] = voltage
+		data[:100] = self.currentVoltagePhi
+		data[100:200] = self.currentVoltageTheta
+		data[200:] = voltage
 		#set the state of the object
 		self.currentPiezoVoltage = voltage
 		
