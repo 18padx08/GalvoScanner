@@ -227,7 +227,7 @@ for dataFile in [os.path.join(root,name) for root, top, file in os.walk(".") for
 rotatedDataArray = dataArray
 print(dataArray)
 
-
+numpy.savetxt("zdataComb.csv", dataArray, delimiter=',')
 #shift the dataArray so we have our gausians around 0
 intens = rotatedDataArray[:] 
 intens = [x for x in intens if x > 0]

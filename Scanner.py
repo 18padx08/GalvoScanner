@@ -448,7 +448,7 @@ class Scanner:
 		fc2CreateImage(rawImage)
 		fc2CreateImage(convertedImage)
 		print(str(TDC_init(-1)))
-		self.setPoint(self.minX, self.minY)
+		#self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
 		plt.clf()
@@ -459,6 +459,7 @@ class Scanner:
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
+				self.setPoint( o, i)
 				#get pictur
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
@@ -479,7 +480,6 @@ class Scanner:
 				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
-				self.setPoint( o, i)
 				imgplot.set_data(self.dataArray)
 				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
 				
