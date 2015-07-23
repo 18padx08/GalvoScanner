@@ -47,4 +47,3 @@ saveState(oneline/xline.npy)
 loadConfig(oneline/yline.cfg)
 scanSample()
 saveState(oneline/yline.npy)
-

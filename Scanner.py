@@ -385,7 +385,8 @@ class Scanner:
 		plt.scatter(self.dataArray)
 		plt.hist2d(self.dataArray)
 		
-	def plot3dmap(self, data, maskvalue=50000):
+	def plot3dmap(self, data, maskvalue=50000, multiple=False, fig=None):
+		plt.clf()
 		if len(data) <= 0:
 			return
 		zlayers = []
@@ -424,12 +425,17 @@ class Scanner:
 		import matplotlib.pyplot as plt 
 		import numpy as np 
 		
-		fig = plt.figure(1)
+		#if not multiple we get a figure object so add our plot as a add_subplot
+		if not multiple:	
+			fig = plt.figure(1)
 		ax = fig.add_subplot(111, projection='3d') 
 		sc = ax.scatter(x,y,z,c=c, cmap=plt.hot())
 		plt.colorbar(sc)
-		plt.show()
-		plt.savefig("3dplot.jpeg")
+		
+		#if we have multiple ones, we dont want to show the plot
+		if not multiple:
+			plt.show()
+			plt.savefig("3dplot.jpeg")
 
 		
 	def scanSample(self):
