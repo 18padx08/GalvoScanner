@@ -1,124 +1,406 @@
 name = oneline
 
-loadConfig(oneline/zline.1.cfg)
+
+		loadConfig(oneline/zline.0.cfg)
+scanSample()
+saveState(oneline/zline0.npy)
+		
+		loadConfig(oneline/zline.1.cfg)
 scanSample()
 saveState(oneline/zline1.npy)
-
-loadConfig(oneline/zline.2.cfg)
+		
+		loadConfig(oneline/zline.2.cfg)
 scanSample()
 saveState(oneline/zline2.npy)
-
-loadConfig(oneline/zline.3.cfg)
+		
+		loadConfig(oneline/zline.3.cfg)
 scanSample()
 saveState(oneline/zline3.npy)
-
-loadConfig(oneline/zline.4.cfg)
+		
+		loadConfig(oneline/zline.4.cfg)
 scanSample()
 saveState(oneline/zline4.npy)
-
-loadConfig(oneline/zline.5.cfg)
+		
+		loadConfig(oneline/zline.5.cfg)
 scanSample()
 saveState(oneline/zline5.npy)
-
-loadConfig(oneline/zline.6.cfg)
+		
+		loadConfig(oneline/zline.6.cfg)
 scanSample()
 saveState(oneline/zline6.npy)
-
-loadConfig(oneline/zline.7.cfg)
+		
+		loadConfig(oneline/zline.7.cfg)
 scanSample()
 saveState(oneline/zline7.npy)
-
-loadConfig(oneline/zline.8.cfg)
+		
+		loadConfig(oneline/zline.8.cfg)
 scanSample()
 saveState(oneline/zline8.npy)
-
-loadConfig(oneline/zline.9.cfg)
+		
+		loadConfig(oneline/zline.9.cfg)
 scanSample()
 saveState(oneline/zline9.npy)
-
-loadConfig(oneline/zline.10.cfg)
+		
+		loadConfig(oneline/zline.10.cfg)
 scanSample()
 saveState(oneline/zline10.npy)
-
-loadConfig(oneline/zline.11.cfg)
+		
+		loadConfig(oneline/zline.11.cfg)
 scanSample()
 saveState(oneline/zline11.npy)
-
-loadConfig(oneline/zline.12.cfg)
+		
+		loadConfig(oneline/zline.12.cfg)
 scanSample()
 saveState(oneline/zline12.npy)
-
-loadConfig(oneline/zline.13.cfg)
+		
+		loadConfig(oneline/zline.13.cfg)
 scanSample()
 saveState(oneline/zline13.npy)
-
-loadConfig(oneline/zline.14.cfg)
+		
+		loadConfig(oneline/zline.14.cfg)
 scanSample()
 saveState(oneline/zline14.npy)
-
-loadConfig(oneline/zline.15.cfg)
+		
+		loadConfig(oneline/zline.15.cfg)
 scanSample()
 saveState(oneline/zline15.npy)
-
-loadConfig(oneline/zline.16.cfg)
+		
+		loadConfig(oneline/zline.16.cfg)
 scanSample()
 saveState(oneline/zline16.npy)
-
-loadConfig(oneline/zline.17.cfg)
+		
+		loadConfig(oneline/zline.17.cfg)
 scanSample()
 saveState(oneline/zline17.npy)
-
-loadConfig(oneline/zline.18.cfg)
+		
+		loadConfig(oneline/zline.18.cfg)
 scanSample()
 saveState(oneline/zline18.npy)
-
-loadConfig(oneline/zline.19.cfg)
+		
+		loadConfig(oneline/zline.19.cfg)
 scanSample()
 saveState(oneline/zline19.npy)
-
-loadConfig(oneline/zline.20.cfg)
+		
+		loadConfig(oneline/zline.20.cfg)
 scanSample()
 saveState(oneline/zline20.npy)
-
-loadConfig(oneline/zline.21.cfg)
+		
+		loadConfig(oneline/zline.21.cfg)
 scanSample()
 saveState(oneline/zline21.npy)
-
-loadConfig(oneline/zline.22.cfg)
+		
+		loadConfig(oneline/zline.22.cfg)
 scanSample()
 saveState(oneline/zline22.npy)
-
-loadConfig(oneline/zline.23.cfg)
+		
+		loadConfig(oneline/zline.23.cfg)
 scanSample()
 saveState(oneline/zline23.npy)
-
-loadConfig(oneline/zline.24.cfg)
+		
+		loadConfig(oneline/zline.24.cfg)
 scanSample()
 saveState(oneline/zline24.npy)
-
-loadConfig(oneline/zline.25.cfg)
+		
+		loadConfig(oneline/zline.25.cfg)
 scanSample()
 saveState(oneline/zline25.npy)
-
-loadConfig(oneline/zline.26.cfg)
+		
+		loadConfig(oneline/zline.26.cfg)
 scanSample()
 saveState(oneline/zline26.npy)
-
-loadConfig(oneline/zline.27.cfg)
+		
+		loadConfig(oneline/zline.27.cfg)
 scanSample()
 saveState(oneline/zline27.npy)
-
-loadConfig(oneline/zline.28.cfg)
+		
+		loadConfig(oneline/zline.28.cfg)
 scanSample()
 saveState(oneline/zline28.npy)
-
-loadConfig(oneline/zline.29.cfg)
+		
+		loadConfig(oneline/zline.29.cfg)
 scanSample()
 saveState(oneline/zline29.npy)
-
-loadConfig(oneline/zline.30.cfg)
+		
+		loadConfig(oneline/zline.30.cfg)
 scanSample()
 saveState(oneline/zline30.npy)
+		
+		loadConfig(oneline/zline.31.cfg)
+scanSample()
+saveState(oneline/zline31.npy)
+		
+		loadConfig(oneline/zline.32.cfg)
+scanSample()
+saveState(oneline/zline32.npy)
+		
+		loadConfig(oneline/zline.33.cfg)
+scanSample()
+saveState(oneline/zline33.npy)
+		
+		loadConfig(oneline/zline.34.cfg)
+scanSample()
+saveState(oneline/zline34.npy)
+		
+		loadConfig(oneline/zline.35.cfg)
+scanSample()
+saveState(oneline/zline35.npy)
+		
+		loadConfig(oneline/zline.36.cfg)
+scanSample()
+saveState(oneline/zline36.npy)
+		
+		loadConfig(oneline/zline.37.cfg)
+scanSample()
+saveState(oneline/zline37.npy)
+		
+		loadConfig(oneline/zline.38.cfg)
+scanSample()
+saveState(oneline/zline38.npy)
+		
+		loadConfig(oneline/zline.39.cfg)
+scanSample()
+saveState(oneline/zline39.npy)
+		
+		loadConfig(oneline/zline.40.cfg)
+scanSample()
+saveState(oneline/zline40.npy)
+		
+		loadConfig(oneline/zline.41.cfg)
+scanSample()
+saveState(oneline/zline41.npy)
+		
+		loadConfig(oneline/zline.42.cfg)
+scanSample()
+saveState(oneline/zline42.npy)
+		
+		loadConfig(oneline/zline.43.cfg)
+scanSample()
+saveState(oneline/zline43.npy)
+		
+		loadConfig(oneline/zline.44.cfg)
+scanSample()
+saveState(oneline/zline44.npy)
+		
+		loadConfig(oneline/zline.45.cfg)
+scanSample()
+saveState(oneline/zline45.npy)
+		
+		loadConfig(oneline/zline.46.cfg)
+scanSample()
+saveState(oneline/zline46.npy)
+		
+		loadConfig(oneline/zline.47.cfg)
+scanSample()
+saveState(oneline/zline47.npy)
+		
+		loadConfig(oneline/zline.48.cfg)
+scanSample()
+saveState(oneline/zline48.npy)
+		
+		loadConfig(oneline/zline.49.cfg)
+scanSample()
+saveState(oneline/zline49.npy)
+		
+		loadConfig(oneline/zline.50.cfg)
+scanSample()
+saveState(oneline/zline50.npy)
+		
+		loadConfig(oneline/zline.51.cfg)
+scanSample()
+saveState(oneline/zline51.npy)
+		
+		loadConfig(oneline/zline.52.cfg)
+scanSample()
+saveState(oneline/zline52.npy)
+		
+		loadConfig(oneline/zline.53.cfg)
+scanSample()
+saveState(oneline/zline53.npy)
+		
+		loadConfig(oneline/zline.54.cfg)
+scanSample()
+saveState(oneline/zline54.npy)
+		
+		loadConfig(oneline/zline.55.cfg)
+scanSample()
+saveState(oneline/zline55.npy)
+		
+		loadConfig(oneline/zline.56.cfg)
+scanSample()
+saveState(oneline/zline56.npy)
+		
+		loadConfig(oneline/zline.57.cfg)
+scanSample()
+saveState(oneline/zline57.npy)
+		
+		loadConfig(oneline/zline.58.cfg)
+scanSample()
+saveState(oneline/zline58.npy)
+		
+		loadConfig(oneline/zline.59.cfg)
+scanSample()
+saveState(oneline/zline59.npy)
+		
+		loadConfig(oneline/zline.60.cfg)
+scanSample()
+saveState(oneline/zline60.npy)
+		
+		loadConfig(oneline/zline.61.cfg)
+scanSample()
+saveState(oneline/zline61.npy)
+		
+		loadConfig(oneline/zline.62.cfg)
+scanSample()
+saveState(oneline/zline62.npy)
+		
+		loadConfig(oneline/zline.63.cfg)
+scanSample()
+saveState(oneline/zline63.npy)
+		
+		loadConfig(oneline/zline.64.cfg)
+scanSample()
+saveState(oneline/zline64.npy)
+		
+		loadConfig(oneline/zline.65.cfg)
+scanSample()
+saveState(oneline/zline65.npy)
+		
+		loadConfig(oneline/zline.66.cfg)
+scanSample()
+saveState(oneline/zline66.npy)
+		
+		loadConfig(oneline/zline.67.cfg)
+scanSample()
+saveState(oneline/zline67.npy)
+		
+		loadConfig(oneline/zline.68.cfg)
+scanSample()
+saveState(oneline/zline68.npy)
+		
+		loadConfig(oneline/zline.69.cfg)
+scanSample()
+saveState(oneline/zline69.npy)
+		
+		loadConfig(oneline/zline.70.cfg)
+scanSample()
+saveState(oneline/zline70.npy)
+		
+		loadConfig(oneline/zline.71.cfg)
+scanSample()
+saveState(oneline/zline71.npy)
+		
+		loadConfig(oneline/zline.72.cfg)
+scanSample()
+saveState(oneline/zline72.npy)
+		
+		loadConfig(oneline/zline.73.cfg)
+scanSample()
+saveState(oneline/zline73.npy)
+		
+		loadConfig(oneline/zline.74.cfg)
+scanSample()
+saveState(oneline/zline74.npy)
+		
+		loadConfig(oneline/zline.75.cfg)
+scanSample()
+saveState(oneline/zline75.npy)
+		
+		loadConfig(oneline/zline.76.cfg)
+scanSample()
+saveState(oneline/zline76.npy)
+		
+		loadConfig(oneline/zline.77.cfg)
+scanSample()
+saveState(oneline/zline77.npy)
+		
+		loadConfig(oneline/zline.78.cfg)
+scanSample()
+saveState(oneline/zline78.npy)
+		
+		loadConfig(oneline/zline.79.cfg)
+scanSample()
+saveState(oneline/zline79.npy)
+		
+		loadConfig(oneline/zline.80.cfg)
+scanSample()
+saveState(oneline/zline80.npy)
+		
+		loadConfig(oneline/zline.81.cfg)
+scanSample()
+saveState(oneline/zline81.npy)
+		
+		loadConfig(oneline/zline.82.cfg)
+scanSample()
+saveState(oneline/zline82.npy)
+		
+		loadConfig(oneline/zline.83.cfg)
+scanSample()
+saveState(oneline/zline83.npy)
+		
+		loadConfig(oneline/zline.84.cfg)
+scanSample()
+saveState(oneline/zline84.npy)
+		
+		loadConfig(oneline/zline.85.cfg)
+scanSample()
+saveState(oneline/zline85.npy)
+		
+		loadConfig(oneline/zline.86.cfg)
+scanSample()
+saveState(oneline/zline86.npy)
+		
+		loadConfig(oneline/zline.87.cfg)
+scanSample()
+saveState(oneline/zline87.npy)
+		
+		loadConfig(oneline/zline.88.cfg)
+scanSample()
+saveState(oneline/zline88.npy)
+		
+		loadConfig(oneline/zline.89.cfg)
+scanSample()
+saveState(oneline/zline89.npy)
+		
+		loadConfig(oneline/zline.90.cfg)
+scanSample()
+saveState(oneline/zline90.npy)
+		
+		loadConfig(oneline/zline.91.cfg)
+scanSample()
+saveState(oneline/zline91.npy)
+		
+		loadConfig(oneline/zline.92.cfg)
+scanSample()
+saveState(oneline/zline92.npy)
+		
+		loadConfig(oneline/zline.93.cfg)
+scanSample()
+saveState(oneline/zline93.npy)
+		
+		loadConfig(oneline/zline.94.cfg)
+scanSample()
+saveState(oneline/zline94.npy)
+		
+		loadConfig(oneline/zline.95.cfg)
+scanSample()
+saveState(oneline/zline95.npy)
+		
+		loadConfig(oneline/zline.96.cfg)
+scanSample()
+saveState(oneline/zline96.npy)
+		
+		loadConfig(oneline/zline.97.cfg)
+scanSample()
+saveState(oneline/zline97.npy)
+		
+		loadConfig(oneline/zline.98.cfg)
+scanSample()
+saveState(oneline/zline98.npy)
+		
+		loadConfig(oneline/zline.99.cfg)
+scanSample()
+saveState(oneline/zline99.npy)
+		
 
 loadConfig(oneline/xline.cfg)
 scanSample()

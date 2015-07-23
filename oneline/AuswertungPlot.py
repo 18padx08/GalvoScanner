@@ -124,9 +124,9 @@ fig = plt.figure(1)
 
 #create a combined 3d plot
 plt.title("3D Plot of Photon counts X/Y/Z")
-plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "x" in name], plotid=311, title="X-Direction")
-plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "yline" in name], plotid=312, title="Y-Direction")
-plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "z" in name], maskvalue=5000, plotid=313, title="Z-Direction")
+plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "x" in name], plotid=311, maskvalue=0, title="X-Direction")
+plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "yline" in name], plotid=312, maskvalue=0, title="Y-Direction")
+plot3dmap([os.path.join(root,name) for root, top, file in os.walk(".") for name in file if "npy" in name and not "csv" in name and "z" in name], maskvalue=0, plotid=313, title="Z-Direction")
 #plt.show()
 fig.set_size_inches(10,25)
 fig.savefig("combinedPlot.png", dpi=100)

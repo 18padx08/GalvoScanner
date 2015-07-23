@@ -456,6 +456,8 @@ class Scanner:
 		imgplot = plt.imshow(self.dataArray, animated=True)
 		imgplot.set_interpolation('none')
 		plt.colorbar()
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
@@ -464,8 +466,6 @@ class Scanner:
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
 				time.sleep(0.1)
-				tmpB = c_int *19
-				tmpBuffer = tmpB()
 				ret = TDC_getCoincCounters(tmpBuffer)
 				
 				#read32 = int32()
@@ -482,7 +482,6 @@ class Scanner:
 				countX += 1
 				imgplot.set_data(self.dataArray)
 				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
-				
 				plt.pause(0.00005)
 				#import time
 				#time.sleep(1)
@@ -493,7 +492,8 @@ class Scanner:
 		plt.ioff()
 		TDC_deInit()
 
-
+		tmpB = None
+		tmpBuffer = None
 		#after we are done scanning stop Capturing 
 		fc2DestroyImage(rawImage)
 		fc2DestroyImage(convertedImage)
