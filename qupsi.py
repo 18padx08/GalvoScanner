@@ -27,6 +27,9 @@ def TDC_getHistogram_Params(binWidth, binCount):
 
 def TDC_getCoincCounters(data):
 	return windll.tdcbase.TDC_getCoincCounters(data)
+	
+def TDC_setExposureTime(time):
+	return windll.tdcbase.TDC_setExposureTime(c_int(time))
 
 #helper functions
 
