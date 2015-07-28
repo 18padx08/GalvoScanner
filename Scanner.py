@@ -237,7 +237,7 @@ class Scanner:
 			if hasattr(tmpObject, "name"):
 				tmpHookName = getattr(tmpObject, "name")
 			setattr(self, tmpHookName, body)
-				
+			return tmpHookName
 	#get state of galvo -> return angle in degree
 	def getAnglePhiDegree(self):
 		return self.currentGalvoPhi * (180./numpy.pi)
@@ -438,7 +438,9 @@ class Scanner:
 			plt.savefig("3dplot.jpeg")
 
 		
-	def scanSample(self):
+	def scanSample(self, master=None):
+		if usetk is not None:
+			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		#start capturing pictures
 		fc2StartCapture(self._context)
 		
@@ -451,12 +453,17 @@ class Scanner:
 		#self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
-		plt.clf()
-		plt.ion()
+		if usetk is None:
+			plt.clf()
+			plt.ion()
 		from matplotlib.colors import LogNorm
 		imgplot = plt.imshow(self.dataArray, animated=True, norm=LogNorm(vmin=100, vmax=1000000))
 		imgplot.set_interpolation('none')
 		plt.colorbar()
+		if usetk is not None:
+			canvas = FigureCanvasTkAgg(imgplot, master=master)
+			canvas.show()
+			canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.032
@@ -492,8 +499,9 @@ class Scanner:
 				plt.draw()
 			countY += 1
 		#plt.show()
-		plt.savefig("sampleScan.jpeg")
-		plt.ioff()
+		if usetk is None:
+			plt.savefig("sampleScan.jpeg")
+			plt.ioff()
 		TDC_deInit()
 
 		tmpB = None

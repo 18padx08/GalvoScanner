@@ -1,7 +1,13 @@
-from tkinter import *
-import tkinter.messagebox as messagebox, tkinter.filedialog as filedialog
+#conditional module loading python 2/3
+try:
+	from tkinter import *
+	import tkinter.messagebox as messagebox, tkinter.filedialog as filedialog
+except ImportError:
+	from Tkinter import *
+	import tkMessageBox as messagebox, tkFileDialog as filedialog
 import Scanner
 import sys
+from functools import partial
 
 class ScanGui:
 	def __init__(self):
@@ -28,9 +34,12 @@ class ScanGui:
 			self.openConfig.pack()
 		
 		#add a button to start the scanning
-			self.startScan = Button(frame, text="Start Scan", command=self.gs.scanSample)
+			self.startScan = Button(frame, text="Start Scan", command=lambda: self.gs.scanSample(usetk=frame))
 			self.startScan.pack()
 		
+		#add menu
+		self.menu = Menu(master)
+		self.menu.add_command(label="Parse Hook", command=self.loadHookFile)
 		
 		#start gui
 		master.mainloop()
@@ -41,3 +50,15 @@ class ScanGui:
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
 		if f is not None: 
 			self.gs.loadConfig(f.name)
+	def loadHookFile(self):
+		f = filedialog.askopenfile(filetypes=[("HookFile", "*.hk")])
+		if f is not None:
+			hookName = self.gs.parseHook(f.name)
+			self.menu.add_command(label=hookName, command=partial(self.startHook, hookName))
+	
+	def startHook(self, hookName):
+		try:
+			func = getattr(self.gs, hookName)
+			func()
+		except:
+			pass
