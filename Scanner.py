@@ -127,7 +127,7 @@ class Scanner:
 		if not hasattr(self, 'ysteps'):
 			self.ysteps = numpy.linspace(0,0.05, 500)
 
-		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		
 		#prepare the output channels
 		try:
@@ -162,7 +162,7 @@ class Scanner:
 				setattr(self, key, self._config["settings"][key])
 		if hasattr(self, "focus"):
 			self.setFocus(self.focus)
-		self.dataArray = numpy.zeros((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 
 	#setImage properties
 	def setImageProperties(self, gain=0.0, shutter=10.0):
@@ -453,11 +453,15 @@ class Scanner:
 		countY = 0
 		plt.clf()
 		plt.ion()
-		imgplot = plt.imshow(self.dataArray, animated=True)
+		from matplotlib.colors import LogNorm
+		imgplot = plt.imshow(self.dataArray, animated=True, norm=LogNorm(vmin=100, vmax=1000000))
 		imgplot.set_interpolation('none')
 		plt.colorbar()
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
+		sleepTime = 0.032
+		exposureTime = int(sleepTime *1000)
+		TDC_setExposureTime(exposureTime)
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
@@ -465,7 +469,7 @@ class Scanner:
 				#get pictur
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				time.sleep(0.1)
+				time.sleep(sleepTime)
 				ret = TDC_getCoincCounters(tmpBuffer)
 				
 				#read32 = int32()
