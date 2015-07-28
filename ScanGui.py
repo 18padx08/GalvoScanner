@@ -24,27 +24,45 @@ class ScanGui:
 		
 		#we need one slider for focus
 		self.scaleLabel = Label(frame, text="Focus: ")
-		self.scaleLabel.pack()
+		self.scaleLabel.grid(row=0, column=0)
 		self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL)
-		self.scale.pack()
+		self.scale.grid(row=0,column=1)
 		
 		if self.gs is not None:
 		#add a button to loadConfig
 			self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
-			self.openConfig.pack()
+			self.openConfig.grid(row=1, column=0, columnspan=2)
 		
 		#add a button to start the scanning
-			self.startScan = Button(frame, text="Start Scan", command=lambda: self.gs.scanSample(usetk=frame))
-			self.startScan.pack()
+			self.startScan = Button(frame, text="Start Scan", command=lambda: self.startScanning(master=frame))
+			self.startScan.grid(row=2,column=0)
+		
+		#add button to stop scanning
+			self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan, state=DISABLED)
+			self.stopScan.grid(row=2,column=1)
+			
 		
 		#add menu
 		self.menu = Menu(master)
 		self.menu.add_command(label="Parse Hook", command=self.loadHookFile)
 		
+		master.config(menu=self.menu)
 		#start gui
 		master.mainloop()
 		self.gs.ReleaseObjects()
 		self.gs = None
+	
+	def stopScanning(self):
+		self.startScan.config(state=NORMAL)
+		self.stopScan.config(state=DISABLED)
+		self.gs.stopScan()
+	
+	def startScanning(self, master=None):
+		self.startScan.config(state=DISABLED)
+		self.stopScan.config(state=NORMAL)
+		self.gs.scanSample(master=master)
+		self.startScan.config(state=NORMAL)
+		self.stopScan.config(state=DISABLED)
 	
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
@@ -61,4 +79,4 @@ class ScanGui:
 			func = getattr(self.gs, hookName)
 			func()
 		except:
-			pass
+			messagebox.showerror("HookError", sys.exc_info()[0])

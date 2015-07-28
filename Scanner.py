@@ -244,6 +244,8 @@ class Scanner:
 	def getAngleThetaDegree(self):
 		return self.currentGalvoTheta * (180./numpy.pi)
 	
+	def stopScan(self):
+		self.interrupt = True
 	#set Voltage directly
 	def setVoltagePhi(voltage):
 		data = numpy.zeros((200,), dtype=numpy.float64)
@@ -439,7 +441,12 @@ class Scanner:
 
 		
 	def scanSample(self, master=None):
-		if usetk is not None:
+		self.interrupt = False
+		if master is not None:
+			try:
+				import tkinter as Tk
+			except ImportError:
+				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		#start capturing pictures
 		fc2StartCapture(self._context)
@@ -453,17 +460,23 @@ class Scanner:
 		#self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
-		if usetk is None:
+		
+		from matplotlib.colors import LogNorm
+		from matplotlib.figure import Figure
+		f = Figure(figsize=(5,4), dpi=100)
+		fplt = f.add_subplot(211)
+		camImg = f.add_subplot(212)
+		
+		if master is None:
 			plt.clf()
 			plt.ion()
-		from matplotlib.colors import LogNorm
-		imgplot = plt.imshow(self.dataArray, animated=True, norm=LogNorm(vmin=100, vmax=1000000))
+		imgplot = fplt.imshow(self.dataArray, animated=True, norm=LogNorm(vmin=100, vmax=1000000))
 		imgplot.set_interpolation('none')
-		plt.colorbar()
-		if usetk is not None:
-			canvas = FigureCanvasTkAgg(imgplot, master=master)
+		if master is not None:
+			canvas = FigureCanvasTkAgg(f, master=master)
 			canvas.show()
-			canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+			canvas.get_tk_widget().grid(row=3,column=0,columnspan=3,rowspan=3)
+		#plt.colorbar()
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.032
@@ -485,23 +498,42 @@ class Scanner:
 				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / sleepTime
+				fc2RetrieveBuffer(self._context, rawImage)
+				barr = numpy.array(rawImage.pData[:rawImage.dataSize])
+				camImg.imshow(barr.reshape(rawImage.rows.value,rawImage.cols.value), animated=True)
 				if numpy.sum(tmpBuffer) > 50000:
-					fc2RetrieveBuffer(self._context, rawImage)
 					self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
 				imgplot.set_data(self.dataArray)
 				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
-				plt.pause(0.00005)
+				#fplt.pause(0.00005)
 				#import time
 				#time.sleep(1)
-				plt.draw()
+				#fplt.draw()
+				f.canvas.draw()
+				master.update()
+				if self.interrupt:
+					canvas.get_tk_widget().grid_forget()
+					canvas = None
+					master.update()
+					TDC_deInit()
+					tmpBuffer = None
+					tmpB = None
+					fc2DestroyImage(rawImage)
+					fc2DestroyImage(convertedImage)
+					fc2StopCapture(self._context)
+					self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+					self.setPoint(0,0)
+					return
 			countY += 1
 		#plt.show()
-		if usetk is None:
+		if master is None:
 			plt.savefig("sampleScan.jpeg")
 			plt.ioff()
+			canvas.get_tk_widget().grid_forget()
+			canvas = None
 		TDC_deInit()
 
 		tmpB = None
