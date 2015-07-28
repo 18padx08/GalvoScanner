@@ -1,4 +1,4 @@
-from PyDAQmx import *
+#from PyDAQmx import *
 import numpy
 import matplotlib.pyplot as plt
 import random
@@ -187,7 +187,7 @@ class Scanner:
 		return lambda: getattr(self, callback.strip())(args)
 	
 	def parseHook(self, hookFile):
-		keywords = {"print" : lambda args: print(args) }
+		keywords = { }
 		tmpHookName = hookFile
 		#compile a regular expression, so that we have fname(**args) and then call the appropriate function
 		#or match variable declarations var = value
