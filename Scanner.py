@@ -187,7 +187,7 @@ class Scanner:
 		return lambda: getattr(self, callback.strip())(args)
 	
 	def parseHook(self, hookFile):
-		keywords = {"print" : lambda args: print(args) }
+		keywords = { }
 		tmpHookName = hookFile
 		#compile a regular expression, so that we have fname(**args) and then call the appropriate function
 		#or match variable declarations var = value
@@ -469,7 +469,7 @@ class Scanner:
 				#get pictur
 				#ts = fc2GetImageTimeStamp(rawImage)
 				#print(ts.cycleCount)	
-				time.sleep(sleepTime)
+				#time.sleep(sleepTime)
 				ret = TDC_getCoincCounters(tmpBuffer)
 				
 				#read32 = int32()
@@ -477,7 +477,7 @@ class Scanner:
 				#self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
 				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
-				self.dataArray[countY][countX] = numpy.sum(tmpBuffer)
+				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / sleepTime
 				if numpy.sum(tmpBuffer) > 50000:
 					fc2RetrieveBuffer(self._context, rawImage)
 					self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
