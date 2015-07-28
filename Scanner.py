@@ -1,4 +1,4 @@
-#from PyDAQmx import *
+from PyDAQmx import *
 import numpy
 import matplotlib.pyplot as plt
 import random
