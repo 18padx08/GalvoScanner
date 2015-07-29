@@ -43,7 +43,7 @@ class ScanGui:
 			self.startScan.grid(row=2,column=0)
 		
 		#add button to stop scanning
-			self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan, state=DISABLED)
+			self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan)
 			self.stopScan.grid(row=2,column=1)
 			
 		
@@ -61,16 +61,18 @@ class ScanGui:
 		self.gs = None
 	
 	def stopScanning(self):
-		self.startScan.config(state=NORMAL)
-		self.stopScan.config(state=DISABLED)
-		self.mainloop["stop scanning"] = (self.gs.stopScan(), False)
+		#self.startScan.config(state=NORMAL)
+		#self.stopScan.config(state=DISABLED)
+		self.mainloop["stop scanning"] = (self.gs.stopScan, False)
+		
 	
 	def startScanning(self, master=None):
-		self.startScan.config(state=DISABLED)
-		self.stopScan.config(state=NORMAL)
-		self.mainloop["scanning"] = (self.gs.scanSample(master=master), False)
-		self.startScan.config(state=NORMAL)
-		self.stopScan.config(state=DISABLED)
+		#self.startScan.config(state=DISABLED)
+		#self.stopScan.config(state=NORMAL)
+		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master), False)
+		
+		#self.startScan.config(state=NORMAL)
+		#self.stopScan.config(state=DISABLED)
 	
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])

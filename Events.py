@@ -26,36 +26,47 @@ class Callback:
 	
 	def updateLoop(self):
 		print("in update loop", self.running.is_set())
-		self.threads = []
+		self.threads = {}
 		self.currentIndex =0
 
 		with self.chain_lock:
 			for functions in self.callback_chain:
 				#get threads for each functions
 				try:
-					thread += [self.callObject(functions)]
+					self.threads += [self.callObject(functions)]
 				except:
 					self.handleErrors("Error in calling")
 		while self.running.is_set():
-			print("im here")
+			#print("im here")
 			flagRunning = False
 			self.currentIndex = 0
-			for thread in self.threads:
-				if thread.is_allive():
+			del_arr = []
+			for thread_name in self.threads:
+				thread = self.threads[thread_name]
+				if thread.is_alive():
 					#check if the thread is dead
 					flagRunning = True
 				elif self.callback_chain[self.currentIndex][1]:
 					#if we have a continues thread restart it
 					thread.Run()
 					flagRunning = True
-				self.currentIndex += 1
+				else:
+					#thread finished and is not continues so clear it from the list
+					currentCallback = self.callback_chain[self.currentIndex]
+					del_arr += [currentCallback[2]]
+					del self.callback_chain[self.currentIndex]
+				if self.currentIndex + 1 < len(self.callback_chain):	
+					self.currentIndex += 1
+			for name in del_arr:
+				#remove the entries from the dictionary
+				del self.threads[name]
 			if not flagRunning:
 				#if callback_chain is empty stop updateLoop
 				#we may want to continue the loop
 				#self.running.clear()
 				pass
-			print("propagateUpdate to master")
-			self.propagateUpdate()
+			#print("propagateUpdate to master")
+			#self.propagateUpdate()
 	
 	@abc.abstractmethod
 	def propagateUpdate(self):
@@ -70,13 +81,15 @@ class Callback:
 	def getEventPointer(self, func, name):
 		return partial(func, self)
 	
-	def __setitem__(self, key, value, continues=False):
+	def __setitem__(self, key, value):
 		with self.chain_lock:
-			self.callback_chain += [(getEventPointer(value, key), continues)]
+			functions = (value[0], value[1], key)
+			self.callback_chain += [functions]
+			self.threads[key] = self.callObject(functions)
 		
 		
 class TkInterCallback(Callback):
 	def propagateUpdate(self):
-		print("update the gui")
-		#self.parent.update()
-		print("gui should be updated")
+		#pass
+		self.parent.update()
+		

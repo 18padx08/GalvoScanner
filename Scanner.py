@@ -514,7 +514,7 @@ class Scanner:
 				#time.sleep(1)
 				#fplt.draw()
 				f.canvas.draw()
-				master.update()
+				#master.update()
 				if self.interrupt:
 					canvas.get_tk_widget().grid_forget()
 					canvas = None
