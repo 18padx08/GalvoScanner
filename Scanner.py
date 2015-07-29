@@ -449,13 +449,13 @@ class Scanner:
 				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		#start capturing pictures
-		fc2StartCapture(self._context)
+		#fc2StartCapture(self._context)
 		
 		#create the two pictures one for getting input the other to save
-		rawImage = fc2Image()
-		convertedImage = fc2Image()
-		fc2CreateImage(rawImage)
-		fc2CreateImage(convertedImage)
+		#rawImage = fc2Image()
+		#convertedImage = fc2Image()
+		#fc2CreateImage(rawImage)
+		#fc2CreateImage(convertedImage)
 		print(str(TDC_init(-1)))
 		#self.setPoint(self.minX, self.minY)
 		countX = 0
@@ -464,13 +464,13 @@ class Scanner:
 		from matplotlib.colors import LogNorm
 		from matplotlib.figure import Figure
 		f = Figure(figsize=(5,4), dpi=100)
-		fplt = f.add_subplot(211)
-		camImg = f.add_subplot(212)
+		fplt = f.add_subplot(111)
+		
 		
 		if master is None:
 			plt.clf()
 			plt.ion()
-		imgplot = fplt.imshow(self.dataArray, animated=True, norm=LogNorm(vmin=100, vmax=1000000))
+		imgplot = fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
 		imgplot.set_interpolation('none')
 		if master is not None:
 			canvas = FigureCanvasTkAgg(f, master=master)
@@ -498,11 +498,12 @@ class Scanner:
 				#self.analog_input.StopTask()
 				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
 				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / sleepTime
-				fc2RetrieveBuffer(self._context, rawImage)
-				barr = numpy.array(rawImage.pData[:rawImage.dataSize])
-				camImg.imshow(barr.reshape(rawImage.rows.value,rawImage.cols.value), animated=True)
-				if numpy.sum(tmpBuffer) > 50000:
-					self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
+				#fc2RetrieveBuffer(self._context, rawImage)
+				#fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
+				#barr = numpy.array(convertedImage.pData[:convertedImage.dataSize])
+				#camImg.imshow(barr.reshape(convertedImage.rows,convertedImage.cols), animated=True)
+				#if numpy.sum(tmpBuffer) > 50000:
+					#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
 				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
@@ -521,9 +522,9 @@ class Scanner:
 					TDC_deInit()
 					tmpBuffer = None
 					tmpB = None
-					fc2DestroyImage(rawImage)
-					fc2DestroyImage(convertedImage)
-					fc2StopCapture(self._context)
+					#fc2DestroyImage(rawImage)
+					#fc2DestroyImage(convertedImage)
+					#fc2StopCapture(self._context)
 					self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 					self.setPoint(0,0)
 					return
@@ -539,9 +540,9 @@ class Scanner:
 		tmpB = None
 		tmpBuffer = None
 		#after we are done scanning stop Capturing 
-		fc2DestroyImage(rawImage)
-		fc2DestroyImage(convertedImage)
-		fc2StopCapture(self._context)
+		#fc2DestroyImage(rawImage)
+		#fc2DestroyImage(convertedImage)
+		#fc2StopCapture(self._context)
 	
 	def takePicture(self, name):
 		if not hasattr(self, "_context"):
