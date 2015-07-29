@@ -98,6 +98,7 @@ class Scanner:
 		self.devicePhi = devicePhi
 		self.deviceTheta = deviceTheta
 		self.inputDevice = inputDevice
+		TDC_init(-1)
 		#the calibration values, read them from the config file
 		import json
 		import os.path
@@ -347,6 +348,7 @@ class Scanner:
 		self.analog_input.StopTask()
 		self.analog_input.ClearTask()
 		self.uninitCamera()
+		TDC_deInit()
 		
 		
 	#units are mm: set x and y according to angle and sampledistance x and y is relative to the sample, so it is the
@@ -440,12 +442,66 @@ class Scanner:
 			plt.savefig("3dplot.jpeg")
 	
 	def processMouseClick(self, event):
-		print("Mouse clicked at, " event.x, event.y)
-		if self.interrupt:
-			print("Now I could move")
-		
+		print("Mouse clicked at, ", event.xdata, event.ydata)
+		if self.interrupt and event.xdata is not None and event.ydata is not None:
+			print(self.currentX)
+			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
+			print(self.currentX)
+			
+	def plotCurrentRate(self, master=None):
+		if master is not None:
+			try:
+				import tkinter as Tk
+			except ImportError:
+				import Tkinter as Tk
+			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+		from matplotlib.figure import Figure
+		f = Figure(figsize=(5,4), dpi=100)
+		fplt = f.add_subplot(111)
+		try:
+				import Tkinter as tk
+		except ImportError:
+				import tkinter as tk
+		toolbar_frame = tk.Frame(master)
+		toolbar_frame.grid(row=4,column=4, columnspan=4, rowspan=4)
+		self.ratePlot = FigureCanvasTkAgg(f, master=toolbar_frame)
+		self.ratePlot.show()
+		self.ratePlotWidget =self.ratePlot.get_tk_widget()
+		#register mouse callback to be able to navigate to
+		#f.canvas.mpl_connect('pick_event', self.processMouseClick)
+		self.ratePlotWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+		#add the toolbar 
+		toolbar = NavigationToolbar2TkAgg( self.ratePlot, toolbar_frame)
+		self.ratePlot._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+		toolbar.update()
+		currentRate = []
+		t = []
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
+		ratep  = fplt.plot(t, currentRate)
+		fplt.set_xlim([0,100])
+		i=0
+		filled = False
+		while True:
+			ret = TDC_getCoincCounters(tmpBuffer)
+			if len(currentRate) > 100:
+				currentRate = currentRate[1:]
+				filled = True
+			currentRate += [numpy.sum(tmpBuffer)/0.032]
+			if not filled:
+				t += [i]
+				i+=1
+			ratep[0].set_data(t,currentRate)
+
+			fplt.set_ylim([0, 200000])
+			
+			f.canvas.draw()
+			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
 	def scanSample(self, master=None):
+		#at start we clearly have no interrupt
 		self.interrupt = False
+		#clear data array
+		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		if master is not None:
 			try:
 				import tkinter as Tk
@@ -460,29 +516,48 @@ class Scanner:
 		#convertedImage = fc2Image()
 		#fc2CreateImage(rawImage)
 		#fc2CreateImage(convertedImage)
-		print(str(TDC_init(-1)))
+		
 		#self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
 		
-		from matplotlib.colors import LogNorm
-		from matplotlib.figure import Figure
-		f = Figure(figsize=(5,4), dpi=100)
-		fplt = f.add_subplot(111)
+		if not hasattr(self, "canvas"):
+		#so first init lets create the figure
+			from matplotlib.colors import LogNorm
+			from matplotlib.figure import Figure
+			self.f = Figure(figsize=(5,4), dpi=100)
+			self.fplt = self.f.add_subplot(111)
+
+			if master is None:
+				plt.clf()
+				plt.ion()
+			self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
+			self.imgplot.set_interpolation('none')
+		else:
+			#if the canvas exists just set the data
+			self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
+			self.imgplot.set_interpolation('none')
+			#self.imgplot.set_data(self.dataArray)
 		
-		
-		if master is None:
-			plt.clf()
-			plt.ion()
-		imgplot = fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
-		imgplot.set_interpolation('none')
-		if master is not None:
-			canvas = FigureCanvasTkAgg(f, master=master)
-			canvas.show()
-			canvasWidget =canvas.get_tk_widget()
+		if master is not None and not hasattr(self,"canvas"):
+			#if the canvas is not allready shown show it
+			try:
+				import Tkinter as tk
+			except ImportError:
+				import tkinter as tk
+			toolbar_frame = tk.Frame(master)
+			toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=4)
+			self.canvas = FigureCanvasTkAgg(self.f, master=toolbar_frame)
+			self.canvas.show()
+			self.canvasWidget =self.canvas.get_tk_widget()
 			#register mouse callback to be able to navigate to
-			canvasWidget.bind("<Button-1>", self.processMouseClick)
-			canvasWidget.grid(row=3,column=0,columnspan=3,rowspan=3)
+			self.f.canvas.mpl_connect('button_press_event', self.processMouseClick)
+			self.canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+			#add the toolbar 
+			toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
+			self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+			toolbar.update()
+			
 			
 		#plt.colorbar()
 		tmpB = c_int *19
@@ -515,25 +590,25 @@ class Scanner:
 				#print(numpy.sum(tmpBuffer))
 				#go one step further			
 				countX += 1
-				imgplot.set_data(self.dataArray)
-				imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
+				self.imgplot.set_data(self.dataArray)
+				self.imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
 				#fplt.pause(0.00005)
 				#import time
 				#time.sleep(1)
 				#fplt.draw()
-				f.canvas.draw()
+				self.f.canvas.draw()
 				#master.update()
 				if self.interrupt:
-					canvas.get_tk_widget().grid_forget()
-					canvas = None
+					#canvas.get_tk_widget().grid_forget()
+					#canvas = None
 					master.update()
-					TDC_deInit()
+					#TDC_deInit()
 					tmpBuffer = None
 					tmpB = None
 					#fc2DestroyImage(rawImage)
 					#fc2DestroyImage(convertedImage)
 					#fc2StopCapture(self._context)
-					self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+					#self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 					self.setPoint(0,0)
 					return
 			countY += 1
@@ -543,7 +618,7 @@ class Scanner:
 			plt.ioff()
 			canvas.get_tk_widget().grid_forget()
 			canvas = None
-		TDC_deInit()
+		
 
 		tmpB = None
 		tmpBuffer = None

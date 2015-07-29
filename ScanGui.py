@@ -30,7 +30,7 @@ class ScanGui:
 		#we need one slider for focus
 		self.scaleLabel = Label(frame, text="Focus: ")
 		self.scaleLabel.grid(row=0, column=0)
-		self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL)
+		self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
 		self.scale.grid(row=0,column=1)
 		
 		if self.gs is not None:
@@ -58,6 +58,7 @@ class ScanGui:
 		self.mainloop = Events.TkInterCallback(frame)
 		#start eventhandling thread
 		self.mainloop()
+		self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
 		#start TK main thread for input handling 
 		master.mainloop()
 		self.mainloop.stopUpdates()
@@ -65,14 +66,16 @@ class ScanGui:
 		self.gs = None
 	
 	def stopScanning(self):
-		self.startScan.config(state=NORMAL)
-		self.stopScan.config(state=DISABLED)
+		#self.startScan.config(state=NORMAL)
+		#self.stopScan.config(state=DISABLED)
 		self.mainloop["stop scanning"] = (self.gs.stopScan, False)
 		
-	
+	def ValueChanged(self, value):
+		print("set slider value", value)
+		self.gs.setFocus(float(value))
 	def startScanning(self, master=None):
-		self.startScan.config(state=DISABLED)
-		self.stopScan.config(state=NORMAL)
+		#self.startScan.config(state=DISABLED)
+		#self.stopScan.config(state=NORMAL)
 		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master), False)
 		
 		#self.startScan.config(state=NORMAL)
@@ -90,6 +93,7 @@ class ScanGui:
 	
 	def startHook(self, hookName):
 		try:
+			print("try to start hook: ", hookName)
 			func = getattr(self.gs, hookName)
 			func()
 		except:

@@ -1,6 +1,7 @@
 from functools import partial
 import threading
 import abc
+import time
 
 class Callback:
 	def __init__(self,parent):
@@ -52,6 +53,7 @@ class Callback:
 					flagRunning = True
 				else:
 					#thread finished and is not continues so clear it from the list
+					print("remove thread because it has finished", thread_name)
 					currentCallback = self.callback_chain[self.currentIndex]
 					del_arr += [currentCallback[2]]
 					del self.callback_chain[self.currentIndex]
@@ -68,6 +70,7 @@ class Callback:
 			#print("propagateUpdate to master")
 			#if we want to use that approach, we have to find a way to send an event to the mainthread
 			#self.propagateUpdate()
+			time.sleep(1)
 	
 	@abc.abstractmethod
 	def propagateUpdate(self):
