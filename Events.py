@@ -66,6 +66,7 @@ class Callback:
 				#self.running.clear()
 				pass
 			#print("propagateUpdate to master")
+			#if we want to use that approach, we have to find a way to send an event to the mainthread
 			#self.propagateUpdate()
 	
 	@abc.abstractmethod

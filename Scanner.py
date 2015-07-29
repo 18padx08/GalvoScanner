@@ -438,7 +438,11 @@ class Scanner:
 		if not multiple:
 			plt.show()
 			plt.savefig("3dplot.jpeg")
-
+	
+	def processMouseClick(self, event):
+		print("Mouse clicked at, " event.x, event.y)
+		if self.interrupt:
+			print("Now I could move")
 		
 	def scanSample(self, master=None):
 		self.interrupt = False
@@ -475,7 +479,11 @@ class Scanner:
 		if master is not None:
 			canvas = FigureCanvasTkAgg(f, master=master)
 			canvas.show()
-			canvas.get_tk_widget().grid(row=3,column=0,columnspan=3,rowspan=3)
+			canvasWidget =canvas.get_tk_widget()
+			#register mouse callback to be able to navigate to
+			canvasWidget.bind("<Button-1>", self.processMouseClick)
+			canvasWidget.grid(row=3,column=0,columnspan=3,rowspan=3)
+			
 		#plt.colorbar()
 		tmpB = c_int *19
 		tmpBuffer = tmpB()

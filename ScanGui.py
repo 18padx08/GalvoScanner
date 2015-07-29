@@ -51,24 +51,28 @@ class ScanGui:
 		self.menu = Menu(master)
 		self.menu.add_command(label="Parse Hook", command=self.loadHookFile)
 		
+		
 		master.config(menu=self.menu)
 		#start gui
+		#register our eventhandling
 		self.mainloop = Events.TkInterCallback(frame)
+		#start eventhandling thread
 		self.mainloop()
+		#start TK main thread for input handling 
 		master.mainloop()
 		self.mainloop.stopUpdates()
 		self.gs.ReleaseObjects()
 		self.gs = None
 	
 	def stopScanning(self):
-		#self.startScan.config(state=NORMAL)
-		#self.stopScan.config(state=DISABLED)
+		self.startScan.config(state=NORMAL)
+		self.stopScan.config(state=DISABLED)
 		self.mainloop["stop scanning"] = (self.gs.stopScan, False)
 		
 	
 	def startScanning(self, master=None):
-		#self.startScan.config(state=DISABLED)
-		#self.stopScan.config(state=NORMAL)
+		self.startScan.config(state=DISABLED)
+		self.stopScan.config(state=NORMAL)
 		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master), False)
 		
 		#self.startScan.config(state=NORMAL)
