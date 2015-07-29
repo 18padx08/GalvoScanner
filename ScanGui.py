@@ -5,9 +5,14 @@ try:
 except ImportError:
 	from Tkinter import *
 	import tkMessageBox as messagebox, tkFileDialog as filedialog
-import Scanner
+try:
+	import Scanner
+except:
+	pass
 import sys
 from functools import partial
+import Events
+
 
 class ScanGui:
 	def __init__(self):
@@ -48,19 +53,22 @@ class ScanGui:
 		
 		master.config(menu=self.menu)
 		#start gui
+		self.mainloop = Events.TkInterCallback(frame)
+		self.mainloop()
 		master.mainloop()
+		self.mainloop.stopUpdates()
 		self.gs.ReleaseObjects()
 		self.gs = None
 	
 	def stopScanning(self):
 		self.startScan.config(state=NORMAL)
 		self.stopScan.config(state=DISABLED)
-		self.gs.stopScan()
+		self.mainloop["stop scanning"] = (self.gs.stopScan(), False)
 	
 	def startScanning(self, master=None):
 		self.startScan.config(state=DISABLED)
 		self.stopScan.config(state=NORMAL)
-		self.gs.scanSample(master=master)
+		self.mainloop["scanning"] = (self.gs.scanSample(master=master), False)
 		self.startScan.config(state=NORMAL)
 		self.stopScan.config(state=DISABLED)
 	
