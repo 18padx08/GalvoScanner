@@ -457,20 +457,20 @@ class Scanner:
 				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(5,4), dpi=100)
+		f = Figure(figsize=(4,3), dpi=100)
 		fplt = f.add_subplot(111)
 		try:
 				import Tkinter as tk
 		except ImportError:
 				import tkinter as tk
 		toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=4, columnspan=4, rowspan=4)
+		toolbar_frame.grid(row=4,column=4, columnspan=3, rowspan=4)
 		self.ratePlot = FigureCanvasTkAgg(f, master=toolbar_frame)
 		self.ratePlot.show()
-		self.ratePlotWidget =self.ratePlot.get_tk_widget()
+		ratePlotWidget =self.ratePlot.get_tk_widget()
 		#register mouse callback to be able to navigate to
 		#f.canvas.mpl_connect('pick_event', self.processMouseClick)
-		self.ratePlotWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+		ratePlotWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 		#add the toolbar 
 		toolbar = NavigationToolbar2TkAgg( self.ratePlot, toolbar_frame)
 		self.ratePlot._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -500,7 +500,8 @@ class Scanner:
 			
 			f.canvas.draw()
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
-	def showHBT(self, binWidth=1, binCount=20 master=None):
+	def showHBT(self, binWidth=1, binCount=20, master=None):
+		self.hbtRunning = True
 		#its irritating, binwidth is actually the TDC_timeBase Resolution, that means binWidth corresponds to the time in ns 
 		if master is not None:
 			#import according to python version (2 or 3)
@@ -511,25 +512,25 @@ class Scanner:
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 			
 			#we need to set binWidth according to TDC_timeBase
-			timeBase = TDC_getTimeBase()
+			timeBase = TDC_getTimebase()
 			#time base is the resolution in seconds, so 
-			rightBinWidth = binWidth/1.0e-9 * timeBase
+			rightBinWidth = int((binWidth/1.0e-9) / timeBase)
 			#first set histogram parameter
-			TDC_setHistogram_Params(rightBinWidth,binCount)
+			TDC_setHistogramParams(rightBinWidth,binCount)
 			#set up array with at least binCount elements
 			bufferArray = (c_int * binCount)()
 			from matplotlib.figure import Figure
-			self.histFig = Figure(figsize=(5,4), dpi=100)
+			self.histFig = Figure(figsize=(4,2), dpi=100)
 			self.histAx = self.histFig.add_subplot(111)
-
+			dataArray = numpy.zeros((binCount,))
+			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
 			if master is None:
 				plt.clf()
 				plt.ion()
-			dataArray = numpy.zeros((binCount,))
-			self.histo = self.histAx.histogram(dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
+				self.histo = self.histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			else:
 			#if the canvas exists just set the data
-				self.histo = self.histAx.histogram(dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
+				self.histo = self.histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			#self.imgplot.set_data(self.dataArray)
 		
 		if master is not None and not hasattr(self,"histoCanvas"):
@@ -539,22 +540,21 @@ class Scanner:
 			except ImportError:
 				import tkinter as tk
 			toolbar_frame = tk.Frame(master)
-			toolbar_frame.grid(row=9,column=0, columnspan=6, rowspan=4)
+			toolbar_frame.grid(row=4,column=7, columnspan=2, rowspan=2)
 			self.histoCanvas = FigureCanvasTkAgg(self.histFig, master=toolbar_frame)
 			self.histoCanvas.show()
-			self.histoWidget =self.histoCanvas.get_tk_widget()
+			histoWidget =self.histoCanvas.get_tk_widget()
 			
-			self.histoWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+			histoWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 			#add the toolbar 
-			toolbar = NavigationToolbar2TkAgg( self.histoCanvas, toolbar_frame)
-			self.histoCanvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-			toolbar.update()
 			
-			while True:
+			while self.hbtRunning:
 				#retrieve histogram
 				TDC_getHistogram(data=bufferArray)
 				dataArray = numpy.array(bufferArray)
-				self.histo.set_data(dataArray)
+				print(dataArray)
+				self.histAx.cla()
+				self.histo = self.histAx.bar(t,dataArray)
 				self.histoCanvas.draw()
 				#only update every second
 				time.sleep(1)
@@ -589,7 +589,7 @@ class Scanner:
 		#so first init lets create the figure
 			from matplotlib.colors import LogNorm
 			from matplotlib.figure import Figure
-			self.f = Figure(figsize=(5,4), dpi=100)
+			self.f = Figure(figsize=(4,3), dpi=100)
 			self.fplt = self.f.add_subplot(111)
 
 			if master is None:
@@ -613,10 +613,10 @@ class Scanner:
 			toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=4)
 			self.canvas = FigureCanvasTkAgg(self.f, master=toolbar_frame)
 			self.canvas.show()
-			self.canvasWidget =self.canvas.get_tk_widget()
+			canvasWidget =self.canvas.get_tk_widget()
 			#register mouse callback to be able to navigate to
 			self.f.canvas.mpl_connect('button_press_event', self.processMouseClick)
-			self.canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+			canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 			#add the toolbar 
 			toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
 			self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)

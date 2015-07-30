@@ -52,17 +52,19 @@ class ScanGui:
 		
 		#button for showing hbt
 		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
-		self.hbtButton.grid(row=8, column=4)
+		self.hbtButton.grid(row=1, column=5)
+		self.hbtStopButton = Button(frame, text="stopHBT", command=self.hideHBT)
+		self.hbtStopButton.grid(row=1,column=6)
 		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
-		widthlabel = Label(frame, text="Time Resolution")
-		countLabel = Label(frame, text="binCount")
-		self.widthEntry = Entry(frame, variable=binWidth)
-		self.countEntry = Entry(frame, variable=binCount)
+		self.widthlabel = Label(frame, text="Time Resolution")
+		self.countLabel = Label(frame, text="binCount")
+		self.widthEntry = Entry(frame, textvariable=self.binWidth)
+		self.countEntry = Entry(frame, textvariable=self.binCount)
 		self.binCount.set("20")
-		self.binWidth.set("21")
+		self.binWidth.set("1")
 		self.widthlabel.grid(row=0, column=3)
 		self.widthEntry.grid(row=0, column=4)
 		self.countLabel.grid(row=1, column=3)
@@ -78,18 +80,25 @@ class ScanGui:
 		#register our eventhandling
 		self.mainloop = Events.TkInterCallback(frame)
 		#start eventhandling thread
-		self.mainloop()
-		self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
-		#start TK main thread for input handling 
-		master.mainloop()
-		self.mainloop.stopUpdates()
+		try:
+			self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
+			self.mainloop()
+			master.mainloop()
+			#start TK main thread for input handling 
+			self.mainloop.stopUpdates()
+		except RuntimeError:
+			print("oooops")
 		self.gs.ReleaseObjects()
 		self.gs = None
+
 	
 	def showHBT(self, master=None):
-		self.mainloop["HBT"] = (partial(self.gs.showHBT, master=master), False)
+		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=int(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
 	
-	def checkButtonChanged(self, event):
+	def hideHBT(self):
+		self.gs.hbtRunning = False
+	
+	def checkButtonChanged(self):
 		if self.v.get() == 0:
 			#offvalue
 			self.gs.autoscale = False

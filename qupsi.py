@@ -20,13 +20,13 @@ def TDC_deInit():
 	return windll.tdcbase.TDC_deInit()
 
 def TDC_getHistogram(chanA=-1, chanB=-1, reset=False, data=None, count=None, tooSmall=None, tooLarge=None, eventsA=None, eventsB=None, expTime=None):
-	windll.tdcbase.TDC_getHistogram(chanA,chanB, reset, byref(data), byref(count), byref(tooSmall), byref(tooLarge), byref(eventsA), byref(eventsB), byref(expTime))
+	windll.tdcbase.TDC_getHistogram(chanA,chanB, reset, byref(data) if data is not None else None, byref(count)if count is not None else None, byref(tooSmall)if tooSmall is not None else None, byref(tooLarge)if tooLarge is not None else None, byref(eventsA)if eventsA is not None else None, byref(eventsB)if eventsB is not None else None, byref(expTime)if expTime is not None else None)
 
-def TDC_getHistogram_Params(binWidth, binCount):
-	return windll.tdcbase.TDC_getHistogram_Params(byref(binWidth), byref(binCount))
+def TDC_getHistogramParams(binWidth, binCount):
+	return windll.tdcbase.TDC_getHistogramParams(byref(binWidth), byref(binCount))
 	
-def TDC_setHistogram_Params(binWidth, binCount):
-	return windll.tdcbase.TDC_setHistogram_Params(binWidth, binCount)
+def TDC_setHistogramParams(binWidth, binCount):
+	return windll.tdcbase.TDC_setHistogramParams(c_int(binWidth), c_int(binCount))
 
 def TDC_getCoincCounters(data):
 	return windll.tdcbase.TDC_getCoincCounters(data)

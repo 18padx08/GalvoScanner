@@ -92,6 +92,8 @@ class Callback:
 		with self.chain_lock:
 			functions = (value[0], value[1], key)
 			self.callback_chain += [functions]
+			if not hasattr(self, "threads"):
+				self.threads = {}
 			self.threads[key] = self.callObject(functions)
 		
 		
