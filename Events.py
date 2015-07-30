@@ -2,6 +2,43 @@ from functools import partial
 import threading
 import abc
 import time
+import queue
+import sys
+
+
+class ExThread(threading.Thread):
+	def __init__(self, target=None,name=None):
+		threading.Thread.__init__(self, target=target, name=name)
+		self.__status_queue = queue.Queue()
+		self.exc_raised = threading.Event()
+		self.exc_raised.clear()
+		self.target = target
+
+	def run_with_exception(self):
+		print("start thread")
+		self.target()
+	
+	def run(self):
+		try:
+			self.run_with_exception()
+		except Exception:
+			print("omg i got an exception", sys.exc_info())
+			self.__status_queue.put(sys.exc_info())
+		self.__status_queue.put(None)
+	
+	def wait_for_exc_info(self):
+	    return self.__status_queue.get(timeout=0.1)
+	
+	def join_with_exception(self):
+		try:
+			ex_info = self.wait_for_exc_info()
+		except queue.Empty:
+			return
+		if ex_info is None:
+			return
+		else:
+			raise ex_info[1]
+
 
 class Callback:
 	def __init__(self,parent):
@@ -16,7 +53,7 @@ class Callback:
 	
 	def __call__(self):
 		self.running.set()
-		self.updateThread = threading.Thread(target = self.updateLoop, name="MainUpdateLoop")
+		self.updateThread = ExThread(target = self.updateLoop, name="MainUpdateLoop")
 		self.updateThread.start()
 		return self.updateThread
 	
@@ -46,19 +83,31 @@ class Callback:
 			del_arr = []
 			for thread_name in self.threads:
 				thread = self.threads[thread_name]
+				thread.join_with_exception()
 				if thread.is_alive():
 					#check if the thread is dead
 					flagRunning = True
+					
 				elif self.callback_chain[self.currentIndex][1]:
+					try:
+						thread.join_with_exception()
+					except Exception:
+						pass
+					else:
 					#if we have a continues thread restart it
-					thread.Run()
-					flagRunning = True
+						thread.Run()
+						flagRunning = True
 				else:
+					try:
+						thread.join_with_exception()
+					except Exception:
+						pass
+					else:
 					#thread finished and is not continues so clear it from the list
-					print("remove thread because it has finished", thread_name)
-					currentCallback = self.callback_chain[self.currentIndex]
-					del_arr += [currentCallback[2]]
-					del self.callback_chain[self.currentIndex]
+						print("remove thread because it has finished", thread_name)
+						currentCallback = self.callback_chain[self.currentIndex]
+						del_arr += [currentCallback[2]]
+						del self.callback_chain[self.currentIndex]
 				if self.currentIndex + 1 < len(self.callback_chain):	
 					self.currentIndex += 1
 			for name in del_arr:
@@ -72,7 +121,7 @@ class Callback:
 			#print("propagateUpdate to master")
 			#if we want to use that approach, we have to find a way to send an event to the mainthread
 			#self.propagateUpdate()
-			self.addItem.wait(60)
+			self.addItem.wait(10)
 			self.addItem.clear()
 	
 	@abc.abstractmethod
@@ -82,7 +131,7 @@ class Callback:
 	
 	def callObject(self, func):
 		try:
-			localthread = threading.Thread(target=func[0])
+			localthread = ExThread(target=func[0])
 			localthread.start()
 			return localthread
 		except Exception:
@@ -104,4 +153,3 @@ class TkInterCallback(Callback):
 	def propagateUpdate(self):
 		#pass
 		self.parent.update()
-		

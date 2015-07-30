@@ -458,6 +458,7 @@ class Scanner:
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		from matplotlib.figure import Figure
 		f = Figure(figsize=(4,3), dpi=100)
+		f.subplots_adjust(left=0.3)
 		fplt = f.add_subplot(111)
 		try:
 				import Tkinter as tk
@@ -467,7 +468,7 @@ class Scanner:
 			toolbar_frame = refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=4, columnspan=3, rowspan=4)
+		toolbar_frame.grid(row=4,column=3, columnspan=4, rowspan=4)
 		if refToMain is not None:
 			ratePlot = refToMain.createCanvas(f, toolbar_frame)
 		else:
@@ -478,12 +479,6 @@ class Scanner:
 		#f.canvas.mpl_connect('pick_event', self.processMouseClick)
 		ratePlotWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 		#add the toolbar 
-		if refToMain is not None:
-			toolbar = refToMain.createToolbar(ratePlot, toolbar_frame)
-		else:
-			toolbar = NavigationToolbar2TkAgg( ratePlot, toolbar_frame)
-		ratePlot._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-		toolbar.update()
 		currentRate = []
 		t = []
 		tmpB = c_int *19
@@ -530,7 +525,7 @@ class Scanner:
 			#set up array with at least binCount elements
 			bufferArray = (c_int * binCount)()
 			from matplotlib.figure import Figure
-			histFig = Figure(figsize=(4,2), dpi=100)
+			histFig = Figure(figsize=(4,3), dpi=100)
 			histAx = histFig.add_subplot(111)
 			dataArray = numpy.zeros((binCount,))
 			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
@@ -566,11 +561,11 @@ class Scanner:
 			
 			while True:
 				#retrieve histogram
-				if self.hbtRunning:
+				if not self.hbtRunning:
 					#reset the histogram
-					TDC_getHistogram(reset=True)
+					TDC_clearAllHistograms()
 					TDC_getHistogram(data=bufferArray)
-					self.hbtRunning = False
+					self.hbtRunning = True
 					print("clear data")
 				else:
 					TDC_getHistogram(data=bufferArray)
