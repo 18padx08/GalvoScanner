@@ -10,6 +10,8 @@ class Callback:
 		self.parent = parent
 		self.running = threading.Event()
 		self.running.clear()
+		self.addItem = threading.Event()
+		self.addItem.clear()
 		self.chain_lock = threading.RLock()
 	
 	def __call__(self):
@@ -70,7 +72,8 @@ class Callback:
 			#print("propagateUpdate to master")
 			#if we want to use that approach, we have to find a way to send an event to the mainthread
 			#self.propagateUpdate()
-			time.sleep(1)
+			self.addItem.wait(60)
+			self.addItem.clear()
 	
 	@abc.abstractmethod
 	def propagateUpdate(self):
@@ -95,7 +98,7 @@ class Callback:
 			if not hasattr(self, "threads"):
 				self.threads = {}
 			self.threads[key] = self.callObject(functions)
-		
+		self.addItem.set()
 		
 class TkInterCallback(Callback):
 	def propagateUpdate(self):

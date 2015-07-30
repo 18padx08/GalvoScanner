@@ -92,6 +92,14 @@ class ScanGui:
 		self.gs = None
 
 	
+	def createCanvas(self, figure, master):
+		from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+		return FigureCanvasTkAgg(figure, master=master)
+	def createToolbar(self, canvas, master):
+		from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
+		return NavigationToolbar2TkAgg(canvas, master)
+	def createFrame(self,master):
+		return Frame(master)
 	def showHBT(self, master=None):
 		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=int(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
 	
@@ -116,7 +124,7 @@ class ScanGui:
 	def startScanning(self, master=None):
 		#self.startScan.config(state=DISABLED)
 		#self.stopScan.config(state=NORMAL)
-		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master), False)
+		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master, refToMain=self), False)
 		
 		#self.startScan.config(state=NORMAL)
 		#self.stopScan.config(state=DISABLED)

@@ -449,7 +449,7 @@ class Scanner:
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
 			print(self.currentX)
 			
-	def plotCurrentRate(self, master=None):
+	def plotCurrentRate(self, master=None, refToMain=None):
 		if master is not None:
 			try:
 				import tkinter as Tk
@@ -463,17 +463,26 @@ class Scanner:
 				import Tkinter as tk
 		except ImportError:
 				import tkinter as tk
-		toolbar_frame = tk.Frame(master)
+		if refToMain is not None:
+			toolbar_frame = refToMain.createFrame(master)
+		else:
+			toolbar_frame = tk.Frame(master)
 		toolbar_frame.grid(row=4,column=4, columnspan=3, rowspan=4)
-		self.ratePlot = FigureCanvasTkAgg(f, master=toolbar_frame)
-		self.ratePlot.show()
-		ratePlotWidget =self.ratePlot.get_tk_widget()
+		if refToMain is not None:
+			ratePlot = refToMain.createCanvas(f, toolbar_frame)
+		else:
+			ratePlot = FigureCanvasTkAgg(f, master=toolbar_frame)
+		ratePlot.show()
+		ratePlotWidget =ratePlot.get_tk_widget()
 		#register mouse callback to be able to navigate to
 		#f.canvas.mpl_connect('pick_event', self.processMouseClick)
 		ratePlotWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 		#add the toolbar 
-		toolbar = NavigationToolbar2TkAgg( self.ratePlot, toolbar_frame)
-		self.ratePlot._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+		if refToMain is not None:
+			toolbar = refToMain.createToolbar(ratePlot, toolbar_frame)
+		else:
+			toolbar = NavigationToolbar2TkAgg( ratePlot, toolbar_frame)
+		ratePlot._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 		toolbar.update()
 		currentRate = []
 		t = []
@@ -483,6 +492,7 @@ class Scanner:
 		fplt.set_xlim([0,100])
 		i=0
 		filled = False
+		import threading
 		while True:
 			ret = TDC_getCoincCounters(tmpBuffer)
 			if len(currentRate) > 100:
@@ -500,7 +510,7 @@ class Scanner:
 			
 			f.canvas.draw()
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
-	def showHBT(self, binWidth=1, binCount=20, master=None):
+	def showHBT(self, binWidth=1, binCount=20, master=None, refToMain=None):
 		self.hbtRunning = True
 		#its irritating, binwidth is actually the TDC_timeBase Resolution, that means binWidth corresponds to the time in ns 
 		if master is not None:
@@ -520,17 +530,17 @@ class Scanner:
 			#set up array with at least binCount elements
 			bufferArray = (c_int * binCount)()
 			from matplotlib.figure import Figure
-			self.histFig = Figure(figsize=(4,2), dpi=100)
-			self.histAx = self.histFig.add_subplot(111)
+			histFig = Figure(figsize=(4,2), dpi=100)
+			histAx = histFig.add_subplot(111)
 			dataArray = numpy.zeros((binCount,))
 			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
 			if master is None:
 				plt.clf()
 				plt.ion()
-				self.histo = self.histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
+				self.histo = histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			else:
 			#if the canvas exists just set the data
-				self.histo = self.histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
+				self.histo = histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			#self.imgplot.set_data(self.dataArray)
 		
 		if master is not None and not hasattr(self,"histoCanvas"):
@@ -539,29 +549,41 @@ class Scanner:
 				import Tkinter as tk
 			except ImportError:
 				import tkinter as tk
-			toolbar_frame = tk.Frame(master)
+			if refToMain is not None:
+				toolbar_frame = refToMain.createFrame(master)
+			else:
+				toolbar_frame = tk.Frame(master)
 			toolbar_frame.grid(row=4,column=7, columnspan=2, rowspan=2)
-			self.histoCanvas = FigureCanvasTkAgg(self.histFig, master=toolbar_frame)
-			self.histoCanvas.show()
-			histoWidget =self.histoCanvas.get_tk_widget()
+			if refToMain is not None:
+				histoCanvas = refToMain.createCanvas(histFig, toolbar_frame)
+			else:
+				histoCanvas = FigureCanvasTkAgg(histFig, master=toolbar_frame)
+			histoCanvas.show()
+			histoWidget =histoCanvas.get_tk_widget()
 			
 			histoWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 			#add the toolbar 
 			
-			while self.hbtRunning:
+			while True:
 				#retrieve histogram
-				TDC_getHistogram(data=bufferArray)
+				if self.hbtRunning:
+					#reset the histogram
+					TDC_getHistogram(reset=True)
+					TDC_getHistogram(data=bufferArray)
+					self.hbtRunning = False
+					print("clear data")
+				else:
+					TDC_getHistogram(data=bufferArray)
 				dataArray = numpy.array(bufferArray)
-				print(dataArray)
-				self.histAx.cla()
-				self.histo = self.histAx.bar(t,dataArray)
-				self.histoCanvas.draw()
+				histAx.cla()
+				self.histo = histAx.bar(t,dataArray)
+				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)
 				
 	
 		
-	def scanSample(self, master=None):
+	def scanSample(self, master=None, refToMain=None):
 		#at start we clearly have no interrupt
 		self.interrupt = False
 		#clear data array
@@ -584,43 +606,43 @@ class Scanner:
 		#self.setPoint(self.minX, self.minY)
 		countX = 0
 		countY = 0
+		from matplotlib.colors import LogNorm
+		from matplotlib.figure import Figure
+		f = Figure(figsize=(4,3), dpi=100)
+		self.fplt = f.add_subplot(111)
+		self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
+		self.imgplot.set_interpolation('none')
 		
-		if not hasattr(self, "canvas"):
-		#so first init lets create the figure
-			from matplotlib.colors import LogNorm
-			from matplotlib.figure import Figure
-			self.f = Figure(figsize=(4,3), dpi=100)
-			self.fplt = self.f.add_subplot(111)
-
-			if master is None:
-				plt.clf()
-				plt.ion()
-			self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
-			self.imgplot.set_interpolation('none')
+		if hasattr(self,"canvas"):
+			self.canvas.get_tk_widget().grid_forget()
+			self.canvas = None
+		#if the canvas is not allready shown show it
+		try:
+			import Tkinter as tk
+		except ImportError:
+			import tkinter as tk
+		if refToMain is not None:
+			toolbar_frame = refToMain.createFrame(master)
 		else:
-			#if the canvas exists just set the data
-			self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
-			self.imgplot.set_interpolation('none')
-			#self.imgplot.set_data(self.dataArray)
-		
-		if master is not None and not hasattr(self,"canvas"):
-			#if the canvas is not allready shown show it
-			try:
-				import Tkinter as tk
-			except ImportError:
-				import tkinter as tk
 			toolbar_frame = tk.Frame(master)
-			toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=4)
-			self.canvas = FigureCanvasTkAgg(self.f, master=toolbar_frame)
-			self.canvas.show()
-			canvasWidget =self.canvas.get_tk_widget()
-			#register mouse callback to be able to navigate to
-			self.f.canvas.mpl_connect('button_press_event', self.processMouseClick)
-			canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-			#add the toolbar 
+		toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=4)
+		#if we have a ref to main try to execute the gui generation on the main thread
+		if refToMain is not None:
+			self.canvas = refToMain.createCanvas(f, toolbar_frame)
+		else:
+			self.canvas = FigureCanvasTkAgg(f, master=toolbar_frame)
+		self.canvas.show()
+		canvasWidget =self.canvas.get_tk_widget()
+		#register mouse callback to be able to navigate to
+		f.canvas.mpl_connect('button_press_event', self.processMouseClick)
+		canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+		#add the toolbar 
+		if refToMain is not None:
+			toolbar = refToMain.createToolbar(self.canvas, toolbar_frame)
+		else:
 			toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
-			self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-			toolbar.update()
+		self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+		toolbar.update()
 			
 			
 		#plt.colorbar()
@@ -660,7 +682,7 @@ class Scanner:
 				#import time
 				#time.sleep(1)
 				#fplt.draw()
-				self.f.canvas.draw()
+				f.canvas.draw()
 				#master.update()
 				if self.interrupt:
 					#canvas.get_tk_widget().grid_forget()
