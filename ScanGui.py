@@ -32,7 +32,11 @@ class ScanGui:
 		self.scaleLabel.grid(row=0, column=0)
 		self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
 		self.scale.grid(row=0,column=1)
-		
+		#a checkbox for switching autoscale off or on
+		self.v = IntVar()
+		self.checkbutton = Checkbutton(frame,text="Autoscale", variable=self.v, command=self.checkButtonChanged)
+		self.checkbutton.select()
+		self.checkbutton.grid(row=3, column=4)
 		if self.gs is not None:
 		#add a button to loadConfig
 			self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
@@ -45,7 +49,24 @@ class ScanGui:
 		#add button to stop scanning
 			self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan)
 			self.stopScan.grid(row=2,column=1)
-			
+		
+		#button for showing hbt
+		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
+		self.hbtButton.grid(row=8, column=4)
+		
+		#entry fields for binWidth and binCount
+		self.binWidth = StringVar()
+		self.binCount = StringVar()
+		widthlabel = Label(frame, text="Time Resolution")
+		countLabel = Label(frame, text="binCount")
+		self.widthEntry = Entry(frame, variable=binWidth)
+		self.countEntry = Entry(frame, variable=binCount)
+		self.binCount.set("20")
+		self.binWidth.set("21")
+		self.widthlabel.grid(row=0, column=3)
+		self.widthEntry.grid(row=0, column=4)
+		self.countLabel.grid(row=1, column=3)
+		self.countEntry.grid(row=1,column=4)
 		
 		#add menu
 		self.menu = Menu(master)
@@ -64,6 +85,16 @@ class ScanGui:
 		self.mainloop.stopUpdates()
 		self.gs.ReleaseObjects()
 		self.gs = None
+	
+	def showHBT(self, master=None):
+		self.mainloop["HBT"] = (partial(self.gs.showHBT, master=master), False)
+	
+	def checkButtonChanged(self, event):
+		if self.v.get() == 0:
+			#offvalue
+			self.gs.autoscale = False
+		else:
+			self.gs.autoscale = True
 	
 	def stopScanning(self):
 		#self.startScan.config(state=NORMAL)

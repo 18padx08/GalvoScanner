@@ -19,17 +19,23 @@ def TDC_init (deviceId):
 def TDC_deInit():
 	return windll.tdcbase.TDC_deInit()
 
-def TDC_getHistogram(chanA, chanB, reset, data, count, tooSmall, tooLarge, eventsA, eventsB, expTime):
+def TDC_getHistogram(chanA=-1, chanB=-1, reset=False, data=None, count=None, tooSmall=None, tooLarge=None, eventsA=None, eventsB=None, expTime=None):
 	windll.tdcbase.TDC_getHistogram(chanA,chanB, reset, byref(data), byref(count), byref(tooSmall), byref(tooLarge), byref(eventsA), byref(eventsB), byref(expTime))
 
 def TDC_getHistogram_Params(binWidth, binCount):
 	return windll.tdcbase.TDC_getHistogram_Params(byref(binWidth), byref(binCount))
+	
+def TDC_setHistogram_Params(binWidth, binCount):
+	return windll.tdcbase.TDC_setHistogram_Params(binWidth, binCount)
 
 def TDC_getCoincCounters(data):
 	return windll.tdcbase.TDC_getCoincCounters(data)
 	
 def TDC_setExposureTime(time):
 	return windll.tdcbase.TDC_setExposureTime(c_int(time))
+
+def TDC_getTimebase():
+	return windll.tdcbase.TDC_getTimebase()
 
 #helper functions
 

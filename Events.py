@@ -78,9 +78,12 @@ class Callback:
 		return
 	
 	def callObject(self, func):
-		localthread = threading.Thread(target=func[0])
-		localthread.start()
-		return localthread
+		try:
+			localthread = threading.Thread(target=func[0])
+			localthread.start()
+			return localthread
+		except Exception:
+			return None
 	
 	def getEventPointer(self, func, name):
 		return partial(func, self)

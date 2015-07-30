@@ -98,6 +98,7 @@ class Scanner:
 		self.devicePhi = devicePhi
 		self.deviceTheta = deviceTheta
 		self.inputDevice = inputDevice
+		self.autoscale = True
 		TDC_init(-1)
 		#the calibration values, read them from the config file
 		import json
@@ -492,11 +493,74 @@ class Scanner:
 				t += [i]
 				i+=1
 			ratep[0].set_data(t,currentRate)
-
-			fplt.set_ylim([0, 200000])
+			if not self.autoscale:
+				fplt.set_ylim([0, 200000])
+			else:
+				fplt.set_ylim([numpy.min(currentRate), numpy.max(currentRate)])
 			
 			f.canvas.draw()
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
+	def showHBT(self, binWidth=1, binCount=20 master=None):
+		#its irritating, binwidth is actually the TDC_timeBase Resolution, that means binWidth corresponds to the time in ns 
+		if master is not None:
+			#import according to python version (2 or 3)
+			try:
+				import tkinter as Tk
+			except ImportError:
+				import Tkinter as Tk
+			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+			
+			#we need to set binWidth according to TDC_timeBase
+			timeBase = TDC_getTimeBase()
+			#time base is the resolution in seconds, so 
+			rightBinWidth = binWidth/1.0e-9 * timeBase
+			#first set histogram parameter
+			TDC_setHistogram_Params(rightBinWidth,binCount)
+			#set up array with at least binCount elements
+			bufferArray = (c_int * binCount)()
+			from matplotlib.figure import Figure
+			self.histFig = Figure(figsize=(5,4), dpi=100)
+			self.histAx = self.histFig.add_subplot(111)
+
+			if master is None:
+				plt.clf()
+				plt.ion()
+			dataArray = numpy.zeros((binCount,))
+			self.histo = self.histAx.histogram(dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
+			else:
+			#if the canvas exists just set the data
+				self.histo = self.histAx.histogram(dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
+			#self.imgplot.set_data(self.dataArray)
+		
+		if master is not None and not hasattr(self,"histoCanvas"):
+			#if the canvas is not allready shown show it
+			try:
+				import Tkinter as tk
+			except ImportError:
+				import tkinter as tk
+			toolbar_frame = tk.Frame(master)
+			toolbar_frame.grid(row=9,column=0, columnspan=6, rowspan=4)
+			self.histoCanvas = FigureCanvasTkAgg(self.histFig, master=toolbar_frame)
+			self.histoCanvas.show()
+			self.histoWidget =self.histoCanvas.get_tk_widget()
+			
+			self.histoWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+			#add the toolbar 
+			toolbar = NavigationToolbar2TkAgg( self.histoCanvas, toolbar_frame)
+			self.histoCanvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+			toolbar.update()
+			
+			while True:
+				#retrieve histogram
+				TDC_getHistogram(data=bufferArray)
+				dataArray = numpy.array(bufferArray)
+				self.histo.set_data(dataArray)
+				self.histoCanvas.draw()
+				#only update every second
+				time.sleep(1)
+				
+	
+		
 	def scanSample(self, master=None):
 		#at start we clearly have no interrupt
 		self.interrupt = False
