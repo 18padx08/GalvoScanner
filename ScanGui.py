@@ -36,7 +36,7 @@ class ScanGui:
 		self.v = IntVar()
 		self.checkbutton = Checkbutton(frame,text="Autoscale", variable=self.v, command=self.checkButtonChanged)
 		self.checkbutton.select()
-		self.checkbutton.grid(row=3, column=4)
+		self.checkbutton.grid(row=3, column=0)
 		if self.gs is not None:
 		#add a button to loadConfig
 			self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
@@ -81,6 +81,7 @@ class ScanGui:
 		self.mainloop = Events.TkInterCallback(frame)
 		#start eventhandling thread
 		try:
+			self.gs.setPoint(0,0)
 			self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
 			self.mainloop()
 			master.mainloop()

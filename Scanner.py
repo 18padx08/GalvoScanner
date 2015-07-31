@@ -457,9 +457,11 @@ class Scanner:
 				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(2,1), dpi=100)
-		f.subplots_adjust(left=0.3)
+		f = Figure(figsize=(3,1.5), dpi=100)
+		f.subplots_adjust(left=0.2)
 		fplt = f.add_subplot(111)
+		for item in ([fplt.title, fplt.xaxis.label, fplt.yaxis.label] +fplt.get_xticklabels() + fplt.get_yticklabels()):
+			item.set_fontsize(8)
 		try:
 				import Tkinter as tk
 		except ImportError:
@@ -525,8 +527,11 @@ class Scanner:
 			#set up array with at least binCount elements
 			bufferArray = (c_int * binCount)()
 			from matplotlib.figure import Figure
-			histFig = Figure(figsize=(2,1), dpi=100)
+			histFig = Figure(figsize=(3,1.5), dpi=100)
+			histFig.subplots_adjust(left=0.2)
 			histAx = histFig.add_subplot(111)
+			for item in ([histAx.title, histAx.xaxis.label, histAx.yaxis.label] +histAx.get_xticklabels() + histAx.get_yticklabels()):
+				item.set_fontsize(8)
 			dataArray = numpy.zeros((binCount,))
 			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
 			if master is None:
@@ -603,11 +608,12 @@ class Scanner:
 		countY = 0
 		from matplotlib.colors import LogNorm
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(8,6), dpi=100)
+		f = Figure(figsize=(8,4), dpi=100)
+		f.subplots_adjust(left=0.2)
 		self.fplt = f.add_subplot(111)
+		#f.tight_layout()
 		self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
 		self.imgplot.set_interpolation('none')
-		
 		if hasattr(self,"canvas"):
 			self.canvas.get_tk_widget().grid_forget()
 			self.canvas = None
@@ -620,7 +626,7 @@ class Scanner:
 			toolbar_frame = refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=5,column=0, columnspan=6, rowspan=6)
+		toolbar_frame.grid(row=7,column=0, columnspan=6, rowspan=6)
 		#if we have a ref to main try to execute the gui generation on the main thread
 		if refToMain is not None:
 			self.canvas = refToMain.createCanvas(f, toolbar_frame)

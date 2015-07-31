@@ -87,7 +87,7 @@ class Callback:
 					thread.join_with_exception()
 				except:
 					#we had an exception, try to rerun the thread
-					thread.start()
+					thread.run()
 				if thread.is_alive():
 					#check if the thread is dead
 					flagRunning = True
