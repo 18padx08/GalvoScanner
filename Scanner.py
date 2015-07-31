@@ -411,15 +411,7 @@ class Scanner:
 		x = x.reshape(vol,)
 		y = y.reshape(vol,)
 		z = z.reshape(vol,)
-		print(x,y,z)
-		#for xval in numpy.linspace(1,xdim,xdim):
-		#	print(len(ydim* zdim *[xval]))
-		#	x = numpy.append(x,ydim* zdim *[xval])
-		#for yval in numpy.linspace(1,ydim,ydim):
-	#		y = numpy.append(y,xdim *zdim * [yval])
-#		for zval in numpy.linspace(1,zdim,zdim):
-#			z = numpy.append(z,xdim *ydim * [zval])
-			
+	
 		c = numpy.array(zlayers)
 		c = c.reshape(xdim*ydim*zdim,order='F')
 		c = numpy.ma.masked_less(c, maskvalue)
@@ -588,22 +580,11 @@ class Scanner:
 		self.interrupt = False
 		#clear data array
 		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
-		if master is not None:
-			try:
-				import tkinter as Tk
-			except ImportError:
-				import Tkinter as Tk
-			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-		#start capturing pictures
-		#fc2StartCapture(self._context)
-		
-		#create the two pictures one for getting input the other to save
-		#rawImage = fc2Image()
-		#convertedImage = fc2Image()
-		#fc2CreateImage(rawImage)
-		#fc2CreateImage(convertedImage)
-		
-		#self.setPoint(self.minX, self.minY)
+		try:
+			import tkinter as Tk
+		except ImportError:
+			import Tkinter as Tk
+		from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		countX = 0
 		countY = 0
 		from matplotlib.colors import LogNorm
@@ -624,12 +605,16 @@ class Scanner:
 			import tkinter as tk
 		if refToMain is not None:
 			toolbar_frame = refToMain.createFrame(master)
+		elif hasattr(self, "refToMain"):
+			toolbar_frame = self.refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
 		toolbar_frame.grid(row=7,column=0, columnspan=6, rowspan=6)
 		#if we have a ref to main try to execute the gui generation on the main thread
 		if refToMain is not None:
 			self.canvas = refToMain.createCanvas(f, toolbar_frame)
+		elif hasattr(self, "refToMain"):
+			self.canvas = self.refToMain.createCanvas(f, toolbar_frame)
 		else:
 			self.canvas = FigureCanvasTkAgg(f, master=toolbar_frame)
 		self.canvas.show()
@@ -637,17 +622,7 @@ class Scanner:
 		#register mouse callback to be able to navigate to
 		f.canvas.mpl_connect('button_press_event', self.processMouseClick)
 		canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-		#add the toolbar 
-		#issues with threading? deactivate toolbar
-		# if refToMain is not None:
-		# 	toolbar = refToMain.createToolbar(self.canvas, toolbar_frame)
-		# else:
-		# 	toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
-		# self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-		# toolbar.update()
-			
-			
-		#plt.colorbar()
+		
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.032
@@ -656,64 +631,43 @@ class Scanner:
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
+				#navigate to location
 				self.setPoint( o, i)
-				#get pictur
-				#ts = fc2GetImageTimeStamp(rawImage)
-				#print(ts.cycleCount)	
-				#time.sleep(sleepTime)
+				#retrieve count rate from adp
 				ret = TDC_getCoincCounters(tmpBuffer)
 				
-				#read32 = int32()
-				#self.analog_input.StartTask()
-				#self.analog_input.ReadAnalogF64(100,0.1,DAQmx_Val_GroupByChannel, tmpBuffer, 100, byref(read32), None)
-				#self.analog_input.StopTask()
-				#print(numpy.mean(tmpBuffer)) if abs(numpy.mean(tmpBuffer)) > 5.0e-4 else 0
+				#set the count rate (the value we get is the pure count number, so divide by exposure time)
 				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / sleepTime
-				#fc2RetrieveBuffer(self._context, rawImage)
-				#fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, rawImage, convertedImage)
-				#barr = numpy.array(convertedImage.pData[:convertedImage.dataSize])
-				#camImg.imshow(barr.reshape(convertedImage.rows,convertedImage.cols), animated=True)
-				#if numpy.sum(tmpBuffer) > 50000:
-					#self.savePicture("[%f %f].png"%(o, i), rawImage, convertedImage)
-				#print(numpy.sum(tmpBuffer))
-				#go one step further			
+							
 				countX += 1
+				#set data and new limits for better color plotting
 				self.imgplot.set_data(self.dataArray)
 				self.imgplot.set_clim(numpy.min(self.dataArray), numpy.max(self.dataArray))
-				#fplt.pause(0.00005)
-				#import time
-				#time.sleep(1)
-				#fplt.draw()
+				
+				#update the canvas with the new data
 				f.canvas.draw()
-				#master.update()
+				
 				if self.interrupt:
-					#canvas.get_tk_widget().grid_forget()
-					#canvas = None
+					#if we have an interrupt stop scanning and clean the resources
+					#update the master (we only can get interrupts from the gui, so its save to assume that master is not None)
 					master.update()
-					#TDC_deInit()
+					
+					#clear the buffer, otherwise we get memory leaks and issues which let the python interpreter crash)
 					tmpBuffer = None
 					tmpB = None
-					#fc2DestroyImage(rawImage)
-					#fc2DestroyImage(convertedImage)
-					#fc2StopCapture(self._context)
-					#self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+					
+					#navigate back to origin
 					self.setPoint(0,0)
 					return
 			countY += 1
-		#plt.show()
 		if master is None:
+			#only save the sample scan if we are not from gui (otherwise we see it there...)
 			plt.savefig("sampleScan.jpeg")
-			plt.ioff()
-			canvas.get_tk_widget().grid_forget()
-			canvas = None
-		
+			plt.ioff()	
 
+		#same as for the interrupt
 		tmpB = None
 		tmpBuffer = None
-		#after we are done scanning stop Capturing 
-		#fc2DestroyImage(rawImage)
-		#fc2DestroyImage(convertedImage)
-		#fc2StopCapture(self._context)
 	
 	def takePicture(self, name):
 		if not hasattr(self, "_context"):

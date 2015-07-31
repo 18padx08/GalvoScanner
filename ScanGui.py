@@ -37,23 +37,31 @@ class ScanGui:
 		self.checkbutton = Checkbutton(frame,text="Autoscale", variable=self.v, command=self.checkButtonChanged)
 		self.checkbutton.select()
 		self.checkbutton.grid(row=3, column=0)
-		if self.gs is not None:
 		#add a button to loadConfig
-			self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
-			self.openConfig.grid(row=1, column=0, columnspan=2)
+		self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
+		self.openConfig.grid(row=1, column=0, columnspan=2)
 		
-		#add a button to start the scanning
-			self.startScan = Button(frame, text="Start Scan", command=lambda: self.startScanning(master=frame))
-			self.startScan.grid(row=2,column=0)
-		
-		#add button to stop scanning
-			self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan)
-			self.stopScan.grid(row=2,column=1)
+	#add a button to start the scanning
+		self.startScan = Button(frame, text="Start Scan", command=lambda: self.startScanning(master=frame))
+		self.startScan.grid(row=2,column=0)
+	
+	#add button to stop scanning
+		self.stopScan = Button(frame, text ="Stop Scan", command=self.gs.stopScan)
+		self.stopScan.grid(row=2,column=1)
+		#button for saving the state
+		self.saveStateButton = Button(frame, text="Save state", command=self.saveStateDialog)
+		self.saveStateButton.grid(row=3, column=1)
+		#button for taking a picture with the ccd
+		self.ccdPic = Button(frame, text="Take Picture", command=self.takePictureDialog)
+		self.ccdPic.grid(row=3, column=2)
+		#button for resetting position
+		self.resetPos = Button(frame, text="Goto 0/0", command=partial(self.gs.setPoint,0,0))
+		self.resetPos.grid(row=3,column=3)
 		
 		#button for showing hbt
 		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
 		self.hbtButton.grid(row=1, column=5)
-		self.hbtStopButton = Button(frame, text="stopHBT", command=self.hideHBT)
+		self.hbtStopButton = Button(frame, text="Clear HBT", command=self.hideHBT)
 		self.hbtStopButton.grid(row=1,column=6)
 		
 		#entry fields for binWidth and binCount
@@ -74,6 +82,8 @@ class ScanGui:
 		self.menu = Menu(master)
 		self.menu.add_command(label="Parse Hook", command=self.loadHookFile)
 		
+		#add reference to ourself so we have access to the ui thread
+		self.gs.refToMain = self
 		
 		master.config(menu=self.menu)
 		#start gui
@@ -130,6 +140,16 @@ class ScanGui:
 		#self.startScan.config(state=NORMAL)
 		#self.stopScan.config(state=DISABLED)
 	
+	def saveStateDialog(self):
+		f = filedialog.asksavefile(filetypes=[("Numpy Binary", "*.npy")])
+		if f is not None:
+			self.gs.saveState(f.name)
+
+	def takePictureDialog(self):
+		f=filedialog.asksavefile(filetypes[("PNG", "*.png")])
+		if f is not None:
+			self.takePicture(f.name)
+
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
 		if f is not None: 
