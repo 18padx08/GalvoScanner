@@ -141,14 +141,14 @@ class ScanGui:
 		#self.stopScan.config(state=DISABLED)
 	
 	def saveStateDialog(self):
-		f = filedialog.asksavefile(filetypes=[("Numpy Binary", "*.npy")])
-		if f is not None:
-			self.gs.saveState(f.name)
+		f = filedialog.asksaveasfilename(filetypes=[("Numpy Binary", "*.npy")])
+		if f:
+			self.gs.saveState(f)
 
 	def takePictureDialog(self):
-		f=filedialog.asksavefile(filetypes[("PNG", "*.png")])
-		if f is not None:
-			self.takePicture(f.name)
+		f=filedialog.asksaveasfilename(filetypes=[("PNG", "*.png")], defaultextension=".png")
+		if f:
+			self.gs.takePicture(f)
 
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
