@@ -6,10 +6,6 @@ import time
 from pyflycam import *
 from qupsi import *
 
-#pillow.readthedocs.org/ for image manipulation
-
-#PIL.ImageChops.composite(image1, image2, mask)
-
 #################################################################################
 
 #container class for holding attributes
@@ -554,20 +550,35 @@ class Scanner:
 			histoWidget =histoCanvas.get_tk_widget()
 			
 			histoWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-			#add the toolbar 
 			
+			#for normalization we need the integration time
+			startTime = time.time()
+			eventsA = c_int()
+			eventsB = c_int()
 			while True:
 				#retrieve histogram
 				if not self.hbtRunning:
 					#reset the histogram
 					TDC_clearAllHistograms()
-					TDC_getHistogram(data=bufferArray)
+					TDC_getHistogram(data=bufferArray,eventsA=eventsA, eventsB=eventsB)
+					startTime = time.time()
+					#be sure to not have a time diff of 0 seconds... (otherwise we divide by zero)
+					endTime = time.time()+1
 					self.hbtRunning = True
 					print("clear data")
 				else:
 					TDC_getHistogram(data=bufferArray)
+					endTime = time.time()
 				dataArray = numpy.array(bufferArray)
 				histAx.cla()
+				#normalize data
+				intTime = endTime - startTime
+				poissonConstant = eventsA.value * eventsB.value * (binWidth/1e-9) * intTime
+				dataArray /= poissonConstant
+				#TODO make correction not static
+				#we assume a poor signal to background noise of 0.5
+				if self.signalCorrection:
+					dataArray = (dataArray-(1-0.5**2))/0.5**2
 				self.histo = histAx.bar(t,dataArray)
 				histFig.canvas.draw()
 				#only update every second

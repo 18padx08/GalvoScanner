@@ -50,19 +50,22 @@ class ScanGui:
 		self.stopScan.grid(row=2,column=1)
 		#button for saving the state
 		self.saveStateButton = Button(frame, text="Save state", command=self.saveStateDialog)
-		self.saveStateButton.grid(row=3, column=1)
+		self.saveStateButton.grid(row=3, column=2)
 		#button for taking a picture with the ccd
 		self.ccdPic = Button(frame, text="Take Picture", command=self.takePictureDialog)
-		self.ccdPic.grid(row=3, column=2)
+		self.ccdPic.grid(row=3, column=3)
 		#button for resetting position
 		self.resetPos = Button(frame, text="Goto 0/0", command=partial(self.gs.setPoint,0,0))
-		self.resetPos.grid(row=3,column=3)
+		self.resetPos.grid(row=3,column=4)
 		
 		#button for showing hbt
 		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
 		self.hbtButton.grid(row=1, column=5)
 		self.hbtStopButton = Button(frame, text="Clear HBT", command=self.hideHBT)
 		self.hbtStopButton.grid(row=1,column=6)
+		#checkbox for correction of HBT
+		self.corr= IntVar()
+		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
 		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
@@ -92,6 +95,7 @@ class ScanGui:
 		#start eventhandling thread
 		try:
 			self.gs.setPoint(0,0)
+			self.gs.setFocus(0)
 			self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
 			self.mainloop()
 			master.mainloop()
@@ -123,6 +127,12 @@ class ScanGui:
 			self.gs.autoscale = False
 		else:
 			self.gs.autoscale = True
+	
+	def checkCorrection(self):
+		if self.corr.get() == 0:
+			self.gs.signalCorrection = False
+		else:
+			self.gs.signalCorrection = True
 	
 	def stopScanning(self):
 		#self.startScan.config(state=NORMAL)
