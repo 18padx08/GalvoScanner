@@ -457,7 +457,7 @@ class Scanner:
 				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(4,3), dpi=100)
+		f = Figure(figsize=(2,1), dpi=100)
 		f.subplots_adjust(left=0.3)
 		fplt = f.add_subplot(111)
 		try:
@@ -468,7 +468,7 @@ class Scanner:
 			toolbar_frame = refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=3, columnspan=4, rowspan=4)
+		toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=3)
 		if refToMain is not None:
 			ratePlot = refToMain.createCanvas(f, toolbar_frame)
 		else:
@@ -525,7 +525,7 @@ class Scanner:
 			#set up array with at least binCount elements
 			bufferArray = (c_int * binCount)()
 			from matplotlib.figure import Figure
-			histFig = Figure(figsize=(4,3), dpi=100)
+			histFig = Figure(figsize=(2,1), dpi=100)
 			histAx = histFig.add_subplot(111)
 			dataArray = numpy.zeros((binCount,))
 			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
@@ -548,7 +548,7 @@ class Scanner:
 				toolbar_frame = refToMain.createFrame(master)
 			else:
 				toolbar_frame = tk.Frame(master)
-			toolbar_frame.grid(row=4,column=7, columnspan=2, rowspan=2)
+			toolbar_frame.grid(row=4,column=3, columnspan=3, rowspan=3)
 			if refToMain is not None:
 				histoCanvas = refToMain.createCanvas(histFig, toolbar_frame)
 			else:
@@ -603,7 +603,7 @@ class Scanner:
 		countY = 0
 		from matplotlib.colors import LogNorm
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(4,3), dpi=100)
+		f = Figure(figsize=(8,6), dpi=100)
 		self.fplt = f.add_subplot(111)
 		self.imgplot = self.fplt.imshow(self.dataArray, animated=True)#, norm=LogNorm(vmin=100, vmax=1000000))
 		self.imgplot.set_interpolation('none')
@@ -620,7 +620,7 @@ class Scanner:
 			toolbar_frame = refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=4)
+		toolbar_frame.grid(row=5,column=0, columnspan=6, rowspan=6)
 		#if we have a ref to main try to execute the gui generation on the main thread
 		if refToMain is not None:
 			self.canvas = refToMain.createCanvas(f, toolbar_frame)
@@ -632,12 +632,13 @@ class Scanner:
 		f.canvas.mpl_connect('button_press_event', self.processMouseClick)
 		canvasWidget.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 		#add the toolbar 
-		if refToMain is not None:
-			toolbar = refToMain.createToolbar(self.canvas, toolbar_frame)
-		else:
-			toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
-		self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-		toolbar.update()
+		#issues with threading? deactivate toolbar
+		# if refToMain is not None:
+		# 	toolbar = refToMain.createToolbar(self.canvas, toolbar_frame)
+		# else:
+		# 	toolbar = NavigationToolbar2TkAgg( self.canvas, toolbar_frame)
+		# self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+		# toolbar.update()
 			
 			
 		#plt.colorbar()

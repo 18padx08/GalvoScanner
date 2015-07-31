@@ -83,7 +83,11 @@ class Callback:
 			del_arr = []
 			for thread_name in self.threads:
 				thread = self.threads[thread_name]
-				thread.join_with_exception()
+				try:
+					thread.join_with_exception()
+				except:
+					#we had an exception, try to rerun the thread
+					thread.start()
 				if thread.is_alive():
 					#check if the thread is dead
 					flagRunning = True
@@ -101,7 +105,7 @@ class Callback:
 					try:
 						thread.join_with_exception()
 					except Exception:
-						pass
+						print("Fatal error, thread [" + thread_name + "] could not recover state...")
 					else:
 					#thread finished and is not continues so clear it from the list
 						print("remove thread because it has finished", thread_name)
