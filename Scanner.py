@@ -6,10 +6,6 @@ import time
 from pyflycam import *
 from qupsi import *
 
-#pillow.readthedocs.org/ for image manipulation
-
-#PIL.ImageChops.composite(image1, image2, mask)
-
 #################################################################################
 
 #container class for holding attributes
@@ -566,6 +562,8 @@ class Scanner:
 					TDC_clearAllHistograms()
 					TDC_getHistogram(data=bufferArray,eventsA=eventsA, eventsB=eventsB)
 					startTime = time.time()
+					#be sure to not have a time diff of 0 seconds... (otherwise we divide by zero)
+					endTime = time.time()+1
 					self.hbtRunning = True
 					print("clear data")
 				else:
