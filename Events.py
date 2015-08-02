@@ -152,7 +152,8 @@ class Callback:
 				self.threads = {}
 			self.threads[key] = self.callObject(functions)
 		self.addItem.set()
-		
+	def __contains__(self,key):
+		return key in self.threads
 class TkInterCallback(Callback):
 	def propagateUpdate(self):
 		#pass

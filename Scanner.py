@@ -95,6 +95,7 @@ class Scanner:
 		self.deviceTheta = deviceTheta
 		self.inputDevice = inputDevice
 		self.autoscale = True
+		self.hbtLoop = False
 		TDC_init(-1)
 		#the calibration values, read them from the config file
 		import json
@@ -497,6 +498,7 @@ class Scanner:
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
 	def showHBT(self, binWidth=1, binCount=20, master=None, refToMain=None):
 		self.hbtRunning = True
+		self.hbtLoop = True
 		#its irritating, binwidth is actually the TDC_timeBase Resolution, that means binWidth corresponds to the time in ns 
 		if master is not None:
 			#import according to python version (2 or 3)
@@ -513,7 +515,11 @@ class Scanner:
 			#first set histogram parameter
 			TDC_setHistogramParams(rightBinWidth,binCount)
 			#set up array with at least binCount elements
-			bufferArray = (c_int * binCount)()
+			try:
+				print("allocate memory")
+				bufferArray = (c_int * binCount)()
+			except:
+				print("Could not allocate memory")
 			from matplotlib.figure import Figure
 			histFig = Figure(figsize=(3,1.5), dpi=100)
 			histFig.subplots_adjust(left=0.2)
@@ -555,7 +561,8 @@ class Scanner:
 			startTime = time.time()
 			eventsA = c_int()
 			eventsB = c_int()
-			while True:
+			self.signalCorrection = False
+			while self.hbtLoop:
 				#retrieve histogram
 				if not self.hbtRunning:
 					#reset the histogram
@@ -567,23 +574,30 @@ class Scanner:
 					self.hbtRunning = True
 					print("clear data")
 				else:
-					TDC_getHistogram(data=bufferArray)
+					TDC_getHistogram(chanA=4, chanB= 5,data=bufferArray, eventsA=eventsA, eventsB=eventsB)
 					endTime = time.time()
-				dataArray = numpy.array(bufferArray)
+				dataArray = numpy.array(bufferArray, dtype=numpy.float64)
 				histAx.cla()
-				#normalize data
-				intTime = endTime - startTime
-				poissonConstant = eventsA.value * eventsB.value * (binWidth/1e-9) * intTime
-				dataArray /= poissonConstant
+				#normalize data (we assume to have a probabilty of one at large taus, so take the midvalue of the last 5 elements on each side)
+				#print(numpy.concatenate((dataArray[:5], dataArray[-5:])))
+				normConst = numpy.mean(numpy.concatenate((dataArray[:5], dataArray[-5:])))
+				if normConst > 0:
+					dataArray /= normConst
+				
 				#TODO make correction not static
 				#we assume a poor signal to background noise of 0.5
 				if self.signalCorrection:
 					dataArray = (dataArray-(1-0.5**2))/0.5**2
+					b = dataArray<0
+					dataArray[b] = 0
 				self.histo = histAx.bar(t,dataArray)
 				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)
-				
+			bufferArray = None
+			dataArray = None
+			eventsA = None
+			eventsB = None
 	
 		
 	def scanSample(self, master=None, refToMain=None):

@@ -12,7 +12,7 @@ except:
 import sys
 from functools import partial
 import Events
-
+import time
 
 class ScanGui:
 	def __init__(self):
@@ -66,7 +66,7 @@ class ScanGui:
 		#checkbox for correction of HBT
 		self.corr= IntVar()
 		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
-		
+		self.correctionCheck.grid(row=1, column=7)
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
@@ -116,8 +116,11 @@ class ScanGui:
 	def createFrame(self,master):
 		return Frame(master)
 	def showHBT(self, master=None):
+		if "HBT" in self.mainloop:
+			#there is a process running, stop it
+			self.gs.hbtLoop = False
+			time.sleep(0.5)
 		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=int(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
-	
 	def hideHBT(self):
 		self.gs.hbtRunning = False
 	
