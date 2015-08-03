@@ -2,7 +2,10 @@ from functools import partial
 import threading
 import abc
 import time
-import queue
+try:
+	import queue
+except:
+	import Queue
 import sys
 
 
