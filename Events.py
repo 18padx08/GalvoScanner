@@ -1,4 +1,4 @@
-from functools import partial
+﻿from functools import partial
 import threading
 import abc
 import time
@@ -28,6 +28,10 @@ class ExThread(threading.Thread):
 			print("omg i got an exception", sys.exc_info())
 			self.__status_queue.put(sys.exc_info())
 		self.__status_queue.put(None)
+	def runWithDelay(self, delay):
+		import time
+		time.sleep(delay)
+		self.run()
 	
 	def wait_for_exc_info(self):
 	    return self.__status_queue.get(timeout=0.1)
@@ -101,8 +105,8 @@ class Callback:
 					except Exception:
 						pass
 					else:
-					#if we have a continues thread restart it
-						thread.Run()
+					#if we have a continues thread restart it with the delay
+						thread.runWithDelay(self.callback_chain[self.currentIndex][3])
 						flagRunning = True
 				else:
 					try:
@@ -149,7 +153,8 @@ class Callback:
 	
 	def __setitem__(self, key, value):
 		with self.chain_lock:
-			functions = (value[0], value[1], key)
+			#if we have a periodic task save the intervall
+			functions = (value[0], value[1], key) if not value[1] else (value[0], value[1], key, value[2])
 			self.callback_chain += [functions]
 			if not hasattr(self, "threads"):
 				self.threads = {}

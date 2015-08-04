@@ -1,4 +1,4 @@
-from PyDAQmx import *
+﻿from PyDAQmx import *
 import numpy
 import matplotlib.pyplot as plt
 import random
@@ -182,6 +182,60 @@ class Scanner:
 	def startScanhook(self, hook):
 		getattr(self, hook)()
 	
+	def findMaximumX(self, oldMax, step=0.00005):
+		#we try to find the new maximum in all three dims
+		#first move in x
+		counts = c_int();
+		tmpX = self.currentX
+		max = oldMax
+		self.setPoint(tmpX + step, self.currentY)
+		TDC_getCoincCounters(counts)
+		if counts.value() > oldMax:
+			#ok we have more counts start again
+			max = self.findMaximumX(counts.value())
+		else:
+			#try to go a step back
+			self.setPoint(tmpX - step, self.currentY)
+			TDC_getCoincCounters(counts)
+			if counts.value() > oldMax:
+				#ok start again
+				max = self.findMaximumX(counts.value())
+		#we did not find any maximum go back to origin
+		if max == oldMax:
+			self.setPoint(tmpX, self.currentY)
+		return max
+	def findMaximumY(self, oldMax, step=0.00005):
+		#we try to find the new maximum in all three dims
+		#first move in x
+		counts = c_int();
+		tmpY = self.currentY
+		self.setPoint(self.currentY,tmpY + step)
+		max = oldMax
+		TDC_getCoincCounters(counts)
+		if counts.value() > oldMax:
+			#ok we have more counts start again
+			max = self.findMaximumY(counts.value())
+			
+		else:
+			#try to go a step back
+			self.setPoint(self.currentX,tmpY - step)
+			TDC_getCoincCounters(counts)
+			if counts.value() > oldMax:
+				#ok start again
+				max = self.findMaximumY(counts.value())
+				
+		#we did not find any maximum go back to origin
+		if max == oldMax:
+			self.setPoint(self.currentX,tmpY)
+		return oldMax
+
+	def findMax(self):
+		#lets start finding the maximum
+		counts = c_int()
+		TDC_getCoincCounters(counts)
+		newmax = self.findMaximumX(counts)
+		newmax = self.findMaximumY(newmax)
+
 	def callbackFactory(self, callback, args):
 		return lambda: getattr(self, callback.strip())(args)
 	
@@ -436,6 +490,7 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
+			self.findMax()
 			print(self.currentX)
 			
 	def plotCurrentRate(self, master=None, refToMain=None):

@@ -1,4 +1,4 @@
-#conditional module loading python 2/3
+﻿#conditional module loading python 2/3
 try:
 	from tkinter import *
 	import tkinter.messagebox as messagebox, tkinter.filedialog as filedialog
@@ -153,7 +153,7 @@ class ScanGui:
 		#self.startScan.config(state=DISABLED)
 		#self.stopScan.config(state=NORMAL)
 		self.mainloop["scanning"] = (partial(self.gs.scanSample, master=master, refToMain=self), False)
-		
+		self.mainloop["stayonmax"] = (self.gs.findMax(), True, 10)
 		#self.startScan.config(state=NORMAL)
 		#self.stopScan.config(state=DISABLED)
 	
