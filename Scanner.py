@@ -459,7 +459,7 @@ class Scanner:
 			toolbar_frame = refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=0, columnspan=3, rowspan=3)
+		toolbar_frame.grid(row=4,column=4, columnspan=3, rowspan=3)
 		if refToMain is not None:
 			ratePlot = refToMain.createCanvas(f, toolbar_frame)
 		else:
@@ -521,7 +521,7 @@ class Scanner:
 			except:
 				print("Could not allocate memory")
 			from matplotlib.figure import Figure
-			histFig = Figure(figsize=(3,1.5), dpi=100)
+			histFig = Figure(figsize=(5,3), dpi=100)
 			histFig.subplots_adjust(left=0.2)
 			histAx = histFig.add_subplot(111)
 			for item in ([histAx.title, histAx.xaxis.label, histAx.yaxis.label] +histAx.get_xticklabels() + histAx.get_yticklabels()):
@@ -547,7 +547,7 @@ class Scanner:
 				toolbar_frame = refToMain.createFrame(master)
 			else:
 				toolbar_frame = tk.Frame(master)
-			toolbar_frame.grid(row=4,column=3, columnspan=3, rowspan=3)
+			toolbar_frame.grid(row=7,column=4, columnspan=5, rowspan=3)
 			if refToMain is not None:
 				histoCanvas = refToMain.createCanvas(histFig, toolbar_frame)
 			else:
@@ -574,9 +574,16 @@ class Scanner:
 					self.hbtRunning = True
 					print("clear data")
 				else:
-					TDC_getHistogram(chanA=4, chanB= 5,data=bufferArray, eventsA=eventsA, eventsB=eventsB)
+					TDC_getHistogram(chanA=4, chanB=5,data=bufferArray, eventsA=eventsA, eventsB=eventsB)
 					endTime = time.time()
 				dataArray = numpy.array(bufferArray, dtype=numpy.float64)
+				datalen = len(dataArray)
+				if datalen % 2 == 0:
+					left, right = (dataArray[0::2], dataArray[1::2])
+				else:
+					left, right = (dataArray[0::2], dataArray[1::2])
+				print(left, right)
+				dataArray = numpy.hstack((numpy.flipud(left),right))
 				histAx.cla()
 				#normalize data (we assume to have a probabilty of one at large taus, so take the midvalue of the last 5 elements on each side)
 				#print(numpy.concatenate((dataArray[:5], dataArray[-5:])))
@@ -634,7 +641,7 @@ class Scanner:
 			toolbar_frame = self.refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=7,column=0, columnspan=6, rowspan=6)
+		toolbar_frame.grid(row=4,column=0, columnspan=4, rowspan=6)
 		#if we have a ref to main try to execute the gui generation on the main thread
 		if refToMain is not None:
 			self.canvas = refToMain.createCanvas(f, toolbar_frame)

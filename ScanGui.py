@@ -36,7 +36,7 @@ class ScanGui:
 		self.v = IntVar()
 		self.checkbutton = Checkbutton(frame,text="Autoscale", variable=self.v, command=self.checkButtonChanged)
 		self.checkbutton.select()
-		self.checkbutton.grid(row=3, column=0)
+		self.checkbutton.grid(row=3, column=5)
 		#add a button to loadConfig
 		self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
 		self.openConfig.grid(row=1, column=0, columnspan=2)
@@ -68,7 +68,7 @@ class ScanGui:
 		#checkbox for correction of HBT
 		self.corr= IntVar()
 		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
-		self.correctionCheck.grid(row=1, column=7)
+		self.correctionCheck.grid(row=1, column=8)
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
