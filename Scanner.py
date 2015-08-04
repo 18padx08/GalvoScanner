@@ -182,59 +182,87 @@ class Scanner:
 	def startScanhook(self, hook):
 		getattr(self, hook)()
 	
-	def findMaximumX(self, oldMax, step=0.00005):
+	def findMaximumX(self, oldMax, step=0.0002):
 		#we try to find the new maximum in all three dims
 		#first move in x
-		counts = c_int();
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
 		tmpX = self.currentX
 		max = oldMax
-		self.setPoint(tmpX + step, self.currentY)
-		TDC_getCoincCounters(counts)
-		if counts.value() > oldMax:
-			#ok we have more counts start again
-			max = self.findMaximumX(counts.value())
+		self.setX(tmpX + step)
+		TDC_getCoincCounters(tmpBuffer)
+		countsA = numpy.sum(tmpBuffer)/0.032
+		#try to go a step back
+		self.setX(tmpX - step)
+		TDC_getCoincCounters(tmpBuffer)
+		countsB = numpy.sum(tmpBuffer)/0.032
+		diff = countsA-countsB
+		print("diff is: ", diff)
+		if abs(diff) >  1.5 *numpy.sqrt(oldMax):
+			#so go half the step size to the right
+			if diff < 0:
+				self.setX(tmpX - step/2.0)
+			else:
+				self.setX(tmpX + step / 2.0)
 		else:
-			#try to go a step back
-			self.setPoint(tmpX - step, self.currentY)
-			TDC_getCoincCounters(counts)
-			if counts.value() > oldMax:
-				#ok start again
-				max = self.findMaximumX(counts.value())
+			return oldMax
+		time.sleep(0.032)
+		TDC_getCoincCounters(tmpBuffer)
+		counts = numpy.sum(tmpBuffer)/0.032
+		max = self.findMaximumX(counts, step=step/2.0)
 		#we did not find any maximum go back to origin
-		if max == oldMax:
-			self.setPoint(tmpX, self.currentY)
+		tmpB = None
+		tmpBuffer = None
 		return max
-	def findMaximumY(self, oldMax, step=0.00005):
+	def findMaximumY(self, oldMax, step=0.0002):
 		#we try to find the new maximum in all three dims
 		#first move in x
-		counts = c_int();
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
 		tmpY = self.currentY
-		self.setPoint(self.currentY,tmpY + step)
 		max = oldMax
-		TDC_getCoincCounters(counts)
-		if counts.value() > oldMax:
-			#ok we have more counts start again
-			max = self.findMaximumY(counts.value())
-			
+		self.setY(tmpY + step)
+		TDC_getCoincCounters(tmpBuffer)
+		countsA = numpy.sum(tmpBuffer)/0.032
+		#try to go a step back
+		self.setY(tmpY - step)
+		TDC_getCoincCounters(tmpBuffer)
+		countsB = numpy.sum(tmpBuffer)/0.032
+		diff = countsA-countsB
+		if abs(diff) > 1.5 *numpy.sqrt(oldMax):
+			#so go half the step size to the right
+			if diff < 0:
+				self.setY(tmpY - step/2.0)
+			else:
+				self.setY(tmpY + step / 2.0)
 		else:
-			#try to go a step back
-			self.setPoint(self.currentX,tmpY - step)
-			TDC_getCoincCounters(counts)
-			if counts.value() > oldMax:
-				#ok start again
-				max = self.findMaximumY(counts.value())
-				
+			return oldMax
+		time.sleep(0.032)
+		TDC_getCoincCounters(tmpBuffer)
+		counts = numpy.sum(tmpBuffer)/0.032
+		max = self.findMaximumY(counts, step=step/2.0)
 		#we did not find any maximum go back to origin
-		if max == oldMax:
-			self.setPoint(self.currentX,tmpY)
+		tmpB = None
+		tmpBuffer = None
+		return max				
+		#we did not find any maximum go back to origin
+		
+		self.setY(tmpY)
+		print("max and oldmax are the same", oldMax, max)
+		tmpB = None
+		tmpBuffer = None
 		return oldMax
 
 	def findMax(self):
 		#lets start finding the maximum
-		counts = c_int()
-		TDC_getCoincCounters(counts)
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
+		TDC_getCoincCounters(tmpBuffer)
+		counts = numpy.sum(tmpBuffer)
 		newmax = self.findMaximumX(counts)
 		newmax = self.findMaximumY(newmax)
+		tmpB = None
+		tmpBuffer = None
 
 	def callbackFactory(self, callback, args):
 		return lambda: getattr(self, callback.strip())(args)
