@@ -63,6 +63,8 @@ class ScanGui:
 		self.hbtButton.grid(row=1, column=5)
 		self.hbtStopButton = Button(frame, text="Clear HBT", command=self.hideHBT)
 		self.hbtStopButton.grid(row=1,column=6)
+		self.hbtUnRunButton = Button(frame, text="Stop HBT", command=self.stopHBT)
+		self.hbtUnRunButton.grid(row=1,column=7)
 		#checkbox for correction of HBT
 		self.corr= IntVar()
 		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
@@ -119,10 +121,12 @@ class ScanGui:
 		if "HBT" in self.mainloop:
 			#there is a process running, stop it
 			self.gs.hbtLoop = False
-			time.sleep(0.5)
+			time.sleep(0.8)
 		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=int(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
 	def hideHBT(self):
 		self.gs.hbtRunning = False
+	def stopHBT(self):
+		self.gs.hbtLoop = False
 	
 	def checkButtonChanged(self):
 		if self.v.get() == 0:

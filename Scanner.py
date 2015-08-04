@@ -492,7 +492,7 @@ class Scanner:
 			if not self.autoscale:
 				fplt.set_ylim([0, 200000])
 			else:
-				fplt.set_ylim([numpy.min(currentRate), numpy.max(currentRate)])
+				fplt.set_ylim([0, numpy.max(currentRate)])
 			
 			f.canvas.draw()
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
