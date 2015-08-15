@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: fitpar.ngm,v 1.1 2015/05/12 17:39:38 trurl Exp $ -->
+<!-- Parameter der Modellfunktionen einstellen je nach Fit/Sim-Type
+     Parameter: P0 = Index ins Parameterfeld
+                P1 = Adresse für Auswahl der Modellfunktion
+                P2 = Readonly; Formeln anzeigen               -->
+<Module>
+  <Widget Type="Tabs" Address="$P1$" HideTabs="1"        X="0" Y="0" >
+    <Tab TabCtrl="0:1" >
+    </Tab>
+    <Tab TabCtrl="2:5" >
+      <Widget Type="Box"     Style="Flat"                                                      X="0" Y="0" Align="Top" >
+        <Widget Type="Label"   Caption="A"                                                       X="0" Y="0" Align="Left" />
+        <Widget Type="Label"   Caption="c"                                                       X="0" Y="1" Align="Left" />
+        <Widget Type="Label"   Caption="B"                                                       X="0" Y="2" Align="Left" />
+        <Widget Type="Xedit"   Address="0x3B0" Index="$P0$" Unit=""  Prefix="X" Scale="1000000"  X="1" Y="0" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Xedit"   Address="0x3B2" Index="$P0$" Unit="s" Prefix="p" Scale="1"        X="1" Y="1" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Xedit"   Address="0x3B1" Index="$P0$" Unit=""  Prefix="X" Scale="1000000"  X="1" Y="2" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Label"   Caption=""  Icon="qupsi-form1.png" Condition="==(P0,0)"           X="0" Y="3" Width="3" Alignment="Left Bottom" />
+      </Widget>
+    </Tab>
+    <Tab TabCtrl="3:6" >
+      <Widget Type="Box"     Style="Flat"                                                      X="0" Y="0" Align="Top" >
+        <Widget Type="Label"   Caption="&tau;<sub>a</sub>"                                       X="0" Y="0" Align="Left" />
+        <Widget Type="Xedit"   Address="0x3B3"  Index="$P0$" Unit="s" Prefix="p" Scale="1"       X="1" Y="0" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Label"   Caption=""  Icon="qupsi-form2.png" Condition="==(P0,0)"           X="0" Y="1" Width="3" Alignment="Left Bottom" />
+      </Widget>
+    </Tab>
+    <Tab TabCtrl="4:7" >
+      <Widget Type="Box"     Style="Flat"                                                      X="0" Y="0" Align="Top" >
+        <Widget Type="Label"   Caption="p<sub>f</sub><sup>2</sup>"                               X="0" Y="0" Align="Left" />
+        <Widget Type="Label"   Caption="c"                                                       X="0" Y="1" Align="Left" />
+        <Widget Type="Label"   Caption="&tau;<sub>b</sub>"                                       X="0" Y="2" Align="Left" />
+        <Widget Type="Label"   Caption="&tau;<sub>a</sub>"                                       X="0" Y="3" Align="Left" />
+        <Widget Type="Xedit"   Address="0x3B4" Index="$P0$" Unit=""  Prefix="X" Scale="1000000"  X="1" Y="0" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Xedit"   Address="0x3B5" Index="$P0$" Unit=""  Prefix="X" Scale="1000000"  X="1" Y="1" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Xedit"   Address="0x3B7" Index="$P0$" Unit="s" Prefix="p" Scale="1"        X="1" Y="2" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Xedit"   Address="0x3B6" Index="$P0$" Unit="s" Prefix="p" Scale="1"        X="1" Y="3" Width="2" Readonly="$P2$" Persist="$!(P2)$"/>
+        <Widget Type="Label"   Caption=""  Icon="qupsi-form3.png" Condition="==(P0,0)"           X="0" Y="4" Width="3" Alignment="Left Bottom" />
+      </Widget>
+    </Tab>
+  </Widget>
+</Module>

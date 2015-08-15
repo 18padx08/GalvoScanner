@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- N-Hands Product Spec for TDCEval -->
+<!-- $Id: qutau1b.nps,v 1.4 2015/07/31 11:57:32 trurl Exp $ -->
+<Productspec Code="0x800000" Caption="quTAU">
+
+  <!-- Controller Properties -->
+  <Controller DataChannels="8" Interfaces="Usb">
+    <Variant Code="0x6100" Caption="quTAU"/>
+    <Variant Code="0x6200" Caption="quTAU 1B"/>
+    <Variant Code="0x6300" Caption="quPSI"/>
+  </Controller>
+
+  <!-- Server & Booting -->
+  <Server Name="daisysrv" Port="7700">
+    <Flash>
+      <File Target="Core FPGA" Name="qutau_core.bit" AddrFlash="0x176" AddrVer="0x117" AddrPrd="0x118"/>
+      <File Target="Appl FPGA" Name="qutau_appl.bit" AddrFlash="0x172" AddrVer="0x119" AddrPrd="0x11A"/>
+      <File Target="DSP"       Name="qutau_dsp.ldr"  AddrFlash="0x171" AddrVer="0x111" AddrPrd="0x112"/>
+    </Flash>
+  </Server>
+
+  <!-- Data Channels & Groups -->
+  <Data>
+    <Signals>
+      <Signal  Id="0"  Name="Soft AD"         Type="1"/>
+      <Signal  Id="1"  Name="Counter"         Type="1"/>
+      <Signal  Id="2"  Name="Timestamp29"     Type="1"/>
+      <Signal  Id="3"  Name="Histogram"       Type="1"/>
+      <Signal  Id="6"  Name="Timestamp56"     Type="1"/>
+    </Signals>
+    <Triggers>
+      <Trigger Id="0"  Name="Disabled"        Type="0"/>
+      <Trigger Id="2"  Name="Every"           Type="5"/>
+      <Trigger Id="4"  Name="Histogram"       Type="0"/>
+    </Triggers>
+    <Groups>
+      <Group Id="0"  Name="Disabled"  Abbrev="DIS"  Trigger="0"  ChannelDescr="Name"   Formats=""
+             Properties="HidePage"                          />
+      <Group Id="12" Name="Timestamp" Abbrev="Ts"   Trigger="2"  ChannelDescr="Name"   Formats=""
+             Properties="StoreContinous StoreLocal StoreRetrigger ShowStream"/>
+      <Group Id="13" Name="Histogram" Abbrev="Hist" Trigger="4"  ChannelDescr="Name"   Formats=""
+             Properties="StoreLocal StoreRetrigger"/>
+    </Groups>
+  </Data>
+
+  <!-- GUI settings -->
+  <GuiSettings AutoLoad="qutau1b.ngp"
+               ProgramName="Daisy"
+               MultiDevice="1"
+               ProgramVersion="PacketVersion" />
+
+  <!-- Conditions for conditional GUI Elements -->
+  <Conditions>
+    <Condition Name="HwType"   Address="0x167" Index="0" Default="0"/>
+    <Condition Name="HbtAv"    Address="0x2AC" Index="0" Default="0"/>
+    <Condition Name="LifetmAv" Address="0x2AE" Index="0" Default="0"/>
+    <Condition Name="CndType0" Address="0x3C0" Index="0" Default="0"/>
+    <Condition Name="CndType1" Address="0x3C0" Index="1" Default="0"/>
+    <Condition Name="CndType2" Address="0x3C0" Index="2" Default="0"/>
+    <Condition Name="CndType3" Address="0x3C0" Index="3" Default="0"/>
+    <Condition Name="CndType4" Address="0x3C0" Index="4" Default="0"/>
+    <Condition Name="CndType5" Address="0x3C0" Index="5" Default="0"/>
+    <Condition Name="CndType6" Address="0x3C0" Index="6" Default="0"/>
+    <Condition Name="CndType7" Address="0x3C0" Index="7" Default="0"/>
+  </Conditions>
+
+  <!-- String Constants -->
+  <Strings>
+  </Strings>
+
+</Productspec>

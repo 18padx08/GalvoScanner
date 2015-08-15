@@ -590,32 +590,31 @@ class Scanner:
 			except ImportError:
 				import Tkinter as Tk
 			from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-			
+			TDC_enableHbt(True)
 			#we need to set binWidth according to TDC_timeBase
 			timeBase = TDC_getTimebase()
 			#time base is the resolution in seconds, so 
 			rightBinWidth = int((binWidth/1.0e-9) / timeBase)
 			#first set histogram parameter
-			TDC_setHistogramParams(rightBinWidth,binCount)
+			print(timeBase, rightBinWidth, binCount)
+			TDC_setHbtParams(1,binCount)
 			#set up array with at least binCount elements
-			try:
-				print("allocate memory")
-				bufferArray = (c_int * binCount)()
-			except:
-				print("Could not allocate memory")
+
 			from matplotlib.figure import Figure
 			histFig = Figure(figsize=(5,3), dpi=100)
 			histFig.subplots_adjust(left=0.2)
 			histAx = histFig.add_subplot(111)
 			for item in ([histAx.title, histAx.xaxis.label, histAx.yaxis.label] +histAx.get_xticklabels() + histAx.get_yticklabels()):
 				item.set_fontsize(8)
-			dataArray = numpy.zeros((binCount,))
-			t = numpy.linspace(-(binCount/2), binCount/2, binCount)
+			dataArray = numpy.zeros((binCount*2-1,))
+			t = numpy.linspace(-(binCount), binCount-1, 2*binCount-1)
 			if master is None:
 				plt.clf()
 				plt.ion()
+				print("I WANT DATA", len(t), len(dataArray))
 				self.histo = histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			else:
+				print("I WANT DATA", len(t), len(dataArray))
 			#if the canvas exists just set the data
 				self.histo = histAx.bar(t,dataArray)#, norm=LogNorm(vmin=100, vmax=1000000))
 			#self.imgplot.set_data(self.dataArray)
@@ -642,31 +641,27 @@ class Scanner:
 			
 			#for normalization we need the integration time
 			startTime = time.time()
-			eventsA = c_int()
-			eventsB = c_int()
+			hbtFunction = TDC_createHbtFunction()
 			self.signalCorrection = False
 			while self.hbtLoop:
 				#retrieve histogram
+				print("in loop", self.hbtRunning)
 				if not self.hbtRunning:
 					#reset the histogram
-					TDC_clearAllHistograms()
-					TDC_getHistogram(data=bufferArray,eventsA=eventsA, eventsB=eventsB)
+					print("reset TDC_getHbtCorrelations")
+					#TDC_resetHbtCorrelations()
+					TDC_calcHbtG2(hbtFunction)
 					startTime = time.time()
 					#be sure to not have a time diff of 0 seconds... (otherwise we divide by zero)
 					endTime = time.time()+1
 					self.hbtRunning = True
 					print("clear data")
 				else:
-					TDC_getHistogram(chanA=4, chanB=5,data=bufferArray, eventsA=eventsA, eventsB=eventsB)
+					TDC_calcHbtG2(hbtFunction)
 					endTime = time.time()
-				dataArray = numpy.array(bufferArray, dtype=numpy.float64)
+				dataArray = numpy.array(hbtFunction[0][:], dtype=numpy.float64)
 				datalen = len(dataArray)
-				if datalen % 2 == 0:
-					left, right = (dataArray[0::2], dataArray[1::2])
-				else:
-					left, right = (dataArray[0::2], dataArray[1::2])
-				print(left, right)
-				dataArray = numpy.hstack((numpy.flipud(left),right))
+				print(hbtFunction[0].indexOffset)
 				histAx.cla()
 				#normalize data (we assume to have a probabilty of one at large taus, so take the midvalue of the last 5 elements on each side)
 				#print(numpy.concatenate((dataArray[:5], dataArray[-5:])))
@@ -684,10 +679,9 @@ class Scanner:
 				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)
-			bufferArray = None
+			
 			dataArray = None
-			eventsA = None
-			eventsB = None
+			
 	
 		
 	def scanSample(self, master=None, refToMain=None):

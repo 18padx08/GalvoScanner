@@ -1,0 +1,6 @@
+<Panel Name="Hardware ID" Icon="debug.xpm" >
+  <Widget Type="Box" Style="Flat"  Align="Top Left"  >
+    <Widget Type="Edit"   Caption="Hardware Id" Address="0x168" X="0" Y="0" />
+    <Widget Type="Button" Caption="Save"        Address="0x16F" X="0" Y="1" Data="0x1234" Toggle="0" Align="VCenter" />
+  </Widget>
+</Panel>

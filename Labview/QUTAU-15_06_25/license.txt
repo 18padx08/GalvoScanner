@@ -1,0 +1,37 @@
+Licensing Information
+
+This software can be used and distributed freely.
+The authors grant the following rights to every user:
+
+- to use the software without any restrictions
+
+- to redistribute the unchanged software
+
+- to change the components of the software that are
+  provided in human readable form and to distribute changed
+  components separately from the rest of the software
+
+The software uses the Qt libraries licensed under the terms
+of the Lesser Gnu Public License (LGPL) V2.1. According to
+this license, all users have the right to modify or replace
+those libraries.
+
+Gnu Lesser General Public License (LGPL) V2.1:
+http://www.gnu.org/licenses/lgpl-2.1.html
+
+Qt Licensing Information:
+http://qt-project.org/products/licensing
+
+Qt Source Code:
+http://qt-project.org/downloads
+
+The software uses the library libusb-win32, licensed under
+the terms of the Gnu Lesser General Public License V3.
+According to this license, all users have the right to
+modify or replace this library.
+
+Gnu Lesser General Public License (LGPL) V3:
+http://www.gnu.org/licenses/lgpl-3.0.html
+
+Libusb-win32 Source Code:
+http://sourceforge.net/projects/libusb-win32/

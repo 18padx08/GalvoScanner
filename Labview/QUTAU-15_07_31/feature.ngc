@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: feature.ngc,v 1.4 2015/05/12 17:34:16 trurl Exp $ -->
+<Panel Name="quTAU Features" Icon="key16.xpm" Product="0x840000" >
+
+  <Widget Type="Box" Style="Flat" X="0" Y="0" Align="Top Left" >
+    <Widget Type="Box" Caption="Device Info" X="0" Y="0" >
+      <Widget Type="Label"  Caption="Serial Number"   X="0" Y="0"  Alignment="Left" />
+      <Widget Type="Label"  Caption="HBT"             X="0" Y="1"  Alignment="Left" />
+      <Widget Type="Label"  Caption="Lifetime"        X="0" Y="2"  Alignment="Left" />
+        
+      <Widget Type="Edit"   Caption=""                X="1" Y="0"  Width="2" Address="0x66F" Display="Serial"  ReadOnly="1" />
+      <Widget Type="Check"  Caption=""                X="1" Y="1"  Width="2" Address="0x2AC"                   ReadOnly="1" />
+      <Widget Type="Check"  Caption=""                X="1" Y="2"  Width="2" Address="0x2AE"                   ReadOnly="1" />
+    </Widget>
+  
+    <Widget Type="Box" Caption="Option Upgrade" X="0" Y="1" >
+      <Widget Type="Label"  Caption="Key"     X="0" Y="0" Alignment="Left" />
+      <Widget Type="Edit"   Caption=""        X="1" Y="0" Width="2" Address="0x18D" Display="Hex" />
+      <Widget Type="Label"  Caption="Enter the upgrade key, press enter and restart the device"     X="0" Y="1" Width="3" />
+    </Widget>
+  </Widget>
+
+</Panel>
+
+

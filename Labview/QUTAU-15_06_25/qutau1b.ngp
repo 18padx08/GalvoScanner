@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Profile AppMode="0x3">
+  <Panel File="qutau1b.ngc" />
+  <Persistence>
+    <Persist Addr="0x2a0" Index="0" Value="0"/>
+    <Persist Addr="0x2a1" Index="0" Value="50"/>
+    <Persist Addr="0x2a2" Index="0" Value="3"/>
+    <Persist Addr="0x2a3" Index="0" Value="75"/>
+    <Persist Addr="0x2a6" Index="0" Value="255"/>
+    <Persist Addr="0x2a7" Index="0" Value="10"/>
+    <Persist Addr="0x2a8" Index="0" Value="100"/>
+  </Persistence>
+</Profile>

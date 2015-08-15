@@ -1,0 +1,25 @@
+############################################################
+#
+#  Project:        TDC User Library
+#
+#  Filename:       makefile.mingw
+#
+#  Purpose:        mingw (Windows) makefile for tdcbase examples
+#
+#  Author:         N-Hands GmbH & Co KG
+#
+############################################################
+# $Id: makefile.mingw,v 1.1 2015/07/17 14:37:33 trurl Exp $
+
+LIBDIR=../lib
+INCDIR=../inc
+TARGET=example0.exe example1.exe example2.exe example3.exe \
+       example4.exe example5.exe example6.exe
+
+all : $(TARGET)
+
+define outputrule
+$(1): $(1:%.exe=%.c)
+	gcc -o $$@ -g -Wall -O0 -I$(INCDIR) -L$(LIBDIR) $$< -ltdcbase
+endef
+$(foreach src,$(TARGET),$(eval $(call outputrule,$(src))))
