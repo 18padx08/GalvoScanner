@@ -58,6 +58,20 @@ class ScanGui:
 		self.resetPos = Button(frame, text="Goto 0/0", command=partial(self.gs.setPoint,0,0))
 		self.resetPos.grid(row=3,column=4)
 		
+		#Xslider
+		self.xsliderLabel = Label(frame, text="Y: ")
+		self.xsliderLabel.grid(row=0, column=5)
+		self.xslider = Scale(frame,from_=-0.03, to=0.03, resolution=0.00001, orient=HORIZONTAL, command=self.setX)
+		self.xslider.grid(row=0,column=6)
+		
+		#Yslider
+		self.xsliderLabel = Label(frame, text="X: ")
+		self.xsliderLabel.grid(row=0, column=7)
+		self.xslider = Scale(frame,from_=-0.03, to=0.03, resolution=0.00001, orient=HORIZONTAL, command=self.setY)
+		self.xslider.grid(row=0,column=8)
+		
+		self.angleButton = Button(frame, text="Show Angle", command=partial(self.showAngle, master=frame))
+		self.angleButton.grid(row=0, column=9)
 		#button for showing hbt
 		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
 		self.hbtButton.grid(row=1, column=5)
@@ -128,6 +142,9 @@ class ScanGui:
 	def stopHBT(self):
 		self.gs.hbtLoop = False
 	
+	def showAngle(self, master=None):
+		messagebox.showinfo("Angles", "Phi: %s, Theta: %s"%(self.gs.currentVoltagePhi,self.gs.currentVoltageTheta))
+	
 	def checkButtonChanged(self):
 		if self.v.get() == 0:
 			#offvalue
@@ -149,6 +166,17 @@ class ScanGui:
 	def ValueChanged(self, value):
 		print("set slider value", value)
 		self.gs.setFocus(float(value))
+		
+	def setX(self, value):
+		try:
+			self.gs.setX(float(value))
+		except(Exception):
+			print("X Outside Range")
+	def setY(self, value):
+		try:
+			self.gs.setY(float(value))
+		except(Exception):
+			print("Y Outside Range")
 	def startScanning(self, master=None):
 		#self.startScan.config(state=DISABLED)
 		#self.stopScan.config(state=NORMAL)
