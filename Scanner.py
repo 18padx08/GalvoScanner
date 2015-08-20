@@ -679,7 +679,7 @@ class Scanner:
 					dataArray = (dataArray-(1-0.5**2))/0.5**2
 					b = dataArray<0
 					dataArray[b] = 0
-				histAx.set_ylim([numpy.min(dataArray), numpy.max(dataArray)])
+				histAx.set_ylim([0, numpy.max(dataArray)])
 				self.histo = histAx.plot(t,dataArray)
 				histFig.canvas.draw()
 				#only update every second
