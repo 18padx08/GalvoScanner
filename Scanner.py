@@ -96,6 +96,7 @@ class Scanner:
 		self.inputDevice = inputDevice
 		self.autoscale = True
 		self.hbtLoop = False
+		self.baseVoltage = 5
 		TDC_init(-1)
 		#the calibration values, read them from the config file
 		import json
@@ -142,6 +143,8 @@ class Scanner:
 			print("Could not init DaqMX")
 		self.initCamera()
 				#if we have a focus point set it
+		#init the piezo to full focal 
+		self.setFocus(0)
 		if hasattr(self, "focus"):
 			self.setFocus(self.focus)
 		if(hasattr(self, "imageSettings")):
@@ -368,14 +371,15 @@ class Scanner:
 		self.currentY = 0		
 	
 	def setFocus(self, voltage):
-		if voltage < 0:
+		if self.baseVoltage - voltage < 0:
 			raise(VoltageCannotBeNegativeException)
+		v = self.baseVoltage - voltage
 		data = numpy.zeros((300,), dtype=numpy.float64)
 		data[:100] = self.currentVoltagePhi
 		data[100:200] = self.currentVoltageTheta
-		data[200:] = voltage
+		data[200:] = v
 		#set the state of the object
-		self.currentPiezoVoltage = voltage
+		self.currentPiezoVoltage = v
 		
 		#write to the output channel
 		self.analog_output.WriteAnalogF64(100,False,-1,DAQmx_Val_GroupByChannel ,data,None,None)
@@ -518,7 +522,7 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-			self.findMax()
+			#self.findMax()
 			print(self.currentX)
 			
 	def plotCurrentRate(self, master=None, refToMain=None):
@@ -594,10 +598,10 @@ class Scanner:
 			#we need to set binWidth according to TDC_timeBase
 			timeBase = TDC_getTimebase()
 			#time base is the resolution in seconds, so 
-			rightBinWidth = int((binWidth/1.0e-9) / timeBase)
+			rightBinWidth = int((binWidth*1.0e-9) / timeBase)
 			#first set histogram parameter
 			print(timeBase, rightBinWidth, binCount)
-			TDC_setHbtParams(1,binCount)
+			TDC_setHbtParams(rightBinWidth,binCount)
 			#set up array with at least binCount elements
 
 			from matplotlib.figure import Figure
@@ -666,8 +670,8 @@ class Scanner:
 				#normalize data (we assume to have a probabilty of one at large taus, so take the midvalue of the last 5 elements on each side)
 				#print(numpy.concatenate((dataArray[:5], dataArray[-5:])))
 				normConst = numpy.mean(numpy.concatenate((dataArray[:5], dataArray[-5:])))
-				if normConst > 0:
-					dataArray /= normConst
+				#if normConst > 0:
+					#dataArray /= normConst
 				
 				#TODO make correction not static
 				#we assume a poor signal to background noise of 0.5
@@ -675,7 +679,8 @@ class Scanner:
 					dataArray = (dataArray-(1-0.5**2))/0.5**2
 					b = dataArray<0
 					dataArray[b] = 0
-				self.histo = histAx.bar(t,dataArray)
+				histAx.set_ylim([numpy.min(dataArray), numpy.max(dataArray)])
+				self.histo = histAx.plot(t,dataArray)
 				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)

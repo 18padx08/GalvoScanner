@@ -136,7 +136,7 @@ class ScanGui:
 			#there is a process running, stop it
 			self.gs.hbtLoop = False
 			time.sleep(0.8)
-		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=int(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
+		self.mainloop["HBT"] = (partial(self.gs.showHBT, binWidth=float(self.binWidth.get()), binCount=int(self.binCount.get()), master=master), False)
 	def hideHBT(self):
 		self.gs.hbtRunning = False
 	def stopHBT(self):
