@@ -100,6 +100,9 @@ class Scanner:
 		self.currentXCoord = 0
 		self.currentYCoord = 0
 		TDC_init(-1)
+		#exposure time in ms
+		self.exposureTime = 1
+		TDC_setExposureTime(self.exposureTime)
 		#the calibration values, read them from the config file
 		import json
 		import os.path
@@ -549,7 +552,7 @@ class Scanner:
 			x = yfrom + x
 			y = xfrom + y
 			print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
-			self.goTo(x,y)
+			self.goTo(y,x)
 			
 			
 	def plotCurrentRate(self, master=None, refToMain=None):
@@ -598,7 +601,8 @@ class Scanner:
 			if len(currentRate) > 100:
 				currentRate = currentRate[1:]
 				filled = True
-			currentRate += [numpy.sum(tmpBuffer)/0.032]
+			dataSet = numpy.array(tmpBuffer)
+			currentRate += [numpy.sum(dataSet/(self.exposureTime/1000))]
 			if not filled:
 				t += [i]
 				i+=1
@@ -609,6 +613,7 @@ class Scanner:
 				fplt.set_ylim([0, numpy.max(currentRate)])
 			
 			f.canvas.draw()
+			time.sleep(self.exposureTime/1000)
 			#ratep[0].set_clim(numpy.min(currentRate), numpy.max(currentRate))
 	def showHBT(self, binWidth=1, binCount=20, master=None, refToMain=None):
 		self.hbtRunning = True
@@ -769,9 +774,7 @@ class Scanner:
 		
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
-		sleepTime = 0.032
-		exposureTime = int(sleepTime *1000)
-		TDC_setExposureTime(exposureTime)
+		#TDC_setExposureTime(self.exposureTime)
 		for i in self.ysteps:
 			countX = 0
 			for o in self.xsteps:
@@ -781,7 +784,7 @@ class Scanner:
 				ret = TDC_getCoincCounters(tmpBuffer)
 				
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
-				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / sleepTime
+				self.dataArray[countY][countX] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
 							
 				countX += 1
 				#set data and new limits for better color plotting
@@ -790,7 +793,7 @@ class Scanner:
 				
 				#update the canvas with the new data
 				f.canvas.draw()
-				
+				time.sleep(self.exposureTime/1000)
 				if self.interrupt:
 					#if we have an interrupt stop scanning and clean the resources
 					#update the master (we only can get interrupts from the gui, so its save to assume that master is not None)
@@ -867,27 +870,29 @@ class Scanner:
 		if error!= FC2_ERROR_OK.value:
 			print("Error in fc2Connect: " + str(error))		
 	def checkForMax(self):
-		if not self.interrupt:
+		if not hasattr(self, "interrupt") or not self.interrupt:
+			print("scan has not lunched yet, or is running")
 			return
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
 		#assume that currentXCoord and currentYCoord are set to the right spot
-		xfrom = max(self.currentXCoord-3,0)
-		xto = min(self.currentXCoord + 3, len(self.xsteps))
-		yfrom = max(self.currentYCoord-3,0)
-		yto = min(self.currentYCoord+3, len(self.ysteps))
+		xfrom = max(self.currentYCoord-3,0)
+		xto = min(self.currentYCoord + 3, len(self.ysteps))
+		yfrom = max(self.currentXCoord-3,0)
+		yto = min(self.currentXCoord+3, len(self.xsteps))
 		tmpData = numpy.ones((6,6), dtype=numpy.float64)
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
-		sleepTime = 0.032
-		for x in numpy.linspace(xfrom, xto, xto-xfrom):
-			for y in numpy.linspace(yfrom, yto, yto-yfrom):
+		sleepTime = 0.01
+		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
+			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
 				ret = TDC_getCoincCounters(tmpBuffer)
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
-				tmpData[y][x] = numpy.sum(tmpBuffer) / sleepTime 
+				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
+				time.sleep(self.exposureTime/1000)
 				#same as for the interrupt
 		
-		subarray = tmpData[yfrom:yto, xfrom:xto]
+		subarray = tmpData
 		print(subarray, xfrom, xto, yfrom, yto)
 		m = numpy.argmax(subarray)
 		x,y = numpy.unravel_index(m, subarray.shape)

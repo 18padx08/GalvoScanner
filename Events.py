@@ -73,16 +73,18 @@ class Callback:
 	
 	def updateLoop(self):
 		print("in update loop", self.running.is_set())
-		self.threads = {}
+		if not hasattr(self, "threads"):
+			self.threads = {}
 		self.currentIndex =0
 
-		with self.chain_lock:
-			for functions in self.callback_chain:
+		#with self.chain_lock:
+		#	for functions in self.callback_chain:
 				#get threads for each functions
-				try:
-					self.threads += [self.callObject(functions)]
-				except:
-					self.handleErrors("Error in calling")
+		#		try:
+		#			self.threads += [self.callObject(functions)]
+		#		except:
+		#			print("ooops")
+		#			self.handleErrors("Error in calling")
 		while self.running.is_set():
 			#print("im here")
 			flagRunning = False
@@ -90,6 +92,7 @@ class Callback:
 			del_arr = []
 			for thread_name in self.threads:
 				thread = self.threads[thread_name]
+				print("check thread[%s]"%thread_name)
 				try:
 					thread.join_with_exception()
 				except:
@@ -103,10 +106,12 @@ class Callback:
 					try:
 						thread.join_with_exception()
 					except Exception:
-						pass
+						print("Thread could not recover")
 					else:
 					#if we have a continues thread restart it with the delay
-						thread.runWithDelay(self.callback_chain[self.currentIndex][3])
+						print("continues task, rerun it")
+						#thread.runWithDelay(self.callback_chain[self.currentIndex][3])
+						thread.run()
 						flagRunning = True
 				else:
 					try:
@@ -146,6 +151,7 @@ class Callback:
 			localthread.start()
 			return localthread
 		except Exception:
+			print("could not start thread")
 			return None
 	
 	def getEventPointer(self, func, name):
@@ -160,6 +166,7 @@ class Callback:
 				self.threads = {}
 			self.threads[key] = self.callObject(functions)
 		self.addItem.set()
+		
 	def __contains__(self,key):
 		return key in self.threads
 class TkInterCallback(Callback):
