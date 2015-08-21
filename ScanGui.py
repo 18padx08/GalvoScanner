@@ -113,6 +113,7 @@ class ScanGui:
 			self.gs.setPoint(0,0)
 			self.gs.setFocus(0)
 			self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
+			self.mainloop["checkForMax"] = (self.gs.checkForMax, True)
 			self.mainloop()
 			master.mainloop()
 			#start TK main thread for input handling 

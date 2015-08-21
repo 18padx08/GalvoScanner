@@ -97,6 +97,8 @@ class Scanner:
 		self.autoscale = True
 		self.hbtLoop = False
 		self.baseVoltage = 5
+		self.currentXCoord = 0
+		self.currentYCoord = 0
 		TDC_init(-1)
 		#the calibration values, read them from the config file
 		import json
@@ -475,6 +477,8 @@ class Scanner:
 			numpy.savetxt(name+"_histo_"+".csv", self.histoData)
 	
 	def goTo(self, x, y):
+		self.currentXCoord = x
+		self.currentYCoord = y
 		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
 	
 	def showHistogram(self):
@@ -544,7 +548,7 @@ class Scanner:
 			#TODO check consistency of x and y throughout class
 			x = yfrom + x
 			y = xfrom + y
-			print("(%d,%d) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
+			print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
 			self.goTo(x,y)
 			
 			
@@ -798,6 +802,7 @@ class Scanner:
 					
 					#navigate back to origin
 					self.setPoint(0,0)
+					
 					return
 			countY += 1
 		if master is None:
@@ -861,3 +866,39 @@ class Scanner:
 		error = fc2Connect(self._context, self._guid)
 		if error!= FC2_ERROR_OK.value:
 			print("Error in fc2Connect: " + str(error))		
+	def checkForMax(self):
+		if not self.interrupt:
+			return
+		#the scan is not running, so check if we are on the maximum in a 6x6 px array
+		#assume that currentXCoord and currentYCoord are set to the right spot
+		xfrom = max(self.currentXCoord-3,0)
+		xto = min(self.currentXCoord + 3, len(self.xsteps))
+		yfrom = max(self.currentYCoord-3,0)
+		yto = min(self.currentYCoord+3, len(self.ysteps))
+		tmpData = numpy.ones((6,6), dtype=numpy.float64)
+		tmpB = c_int *19
+		tmpBuffer = tmpB()
+		sleepTime = 0.032
+		for x in numpy.linspace(xfrom, xto, xto-xfrom):
+			for y in numpy.linspace(yfrom, yto, yto-yfrom):
+				#get count rate
+				ret = TDC_getCoincCounters(tmpBuffer)
+				#set the count rate (the value we get is the pure count number, so divide by exposure time)
+				tmpData[y][x] = numpy.sum(tmpBuffer) / sleepTime 
+				#same as for the interrupt
+		
+		subarray = tmpData[yfrom:yto, xfrom:xto]
+		print(subarray, xfrom, xto, yfrom, yto)
+		m = numpy.argmax(subarray)
+		x,y = numpy.unravel_index(m, subarray.shape)
+		print(m, x, y)
+		#calculate real index
+		#TODO check consistency of x and y throughout class
+		x = xfrom + x
+		y = yfrom + y
+		print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
+		self.goTo(x,y)
+		
+		#clean up
+		tmpB = None
+		tmpBuffer = None		
