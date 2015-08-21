@@ -531,14 +531,19 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-
-			subarray = self.dataArray[(int(event.ydata)-3):(int(event.ydata) +3)][(int(event.xdata)-3):(int(event.xdata+3))]
-			print(subarray)
+			xfrom = max(int(event.xdata)-3,0)
+			xto = min(xfrom +6, len(self.xsteps))
+			yfrom = max(int(event.ydata)-3,0)
+			yto = min(yfrom +6, len(self.ysteps))
+			subarray = self.dataArray[yfrom:yto, xfrom:xto]
+			print(subarray, xfrom, xto, yfrom, yto)
 			m = numpy.argmax(subarray)
-			x,y = numpy.unravel_index(m, (len(self.ysteps),len(self.xsteps)))
+			x,y = numpy.unravel_index(m, subarray.shape)
+			print(m, x, y)
 			#calculate real index
-			x = event.xdata -3 + x
-			y = event.ydata -3 + y
+			#TODO check consistency of x and y throughout class
+			x = yfrom + x
+			y = xfrom + y
 			print("(%d,%d) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
 			self.goTo(x,y)
 			
