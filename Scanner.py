@@ -470,6 +470,9 @@ class Scanner:
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
 		numpy.savetxt(name+".csv", self.dataArray, delimiter=',')
+		if self.histoData is not None:
+			numpy.save(name+"_histo_", self.histoData)
+			numpy.savetxt(name+"_histo_"+".csv", self.histoData)
 	
 	def goTo(self, x, y):
 		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
@@ -528,8 +531,14 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-			m = np.argmax(self.dataArray[int(event.xdata)-3:int(event.xdata+3)][int(event.ydata)-3:int(event.ydata) +3])
-			x,y = np.unravel_index(m, (len(self.ysteps),len(self.xsteps)))
+
+			subarray = self.dataArray[(int(event.ydata)-3):(int(event.ydata) +3)][(int(event.xdata)-3):(int(event.xdata+3))]
+			print(subarray)
+			m = numpy.argmax(subarray)
+			x,y = numpy.unravel_index(m, (len(self.ysteps),len(self.xsteps)))
+			#calculate real index
+			x = event.xdata -3 + x
+			y = event.ydata -3 + y
 			print("(%d,%d) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
 			self.goTo(x,y)
 			
@@ -696,6 +705,7 @@ class Scanner:
 				#only update every second
 				time.sleep(1)
 			
+			self.histoData = dataArray
 			dataArray = None
 			
 	

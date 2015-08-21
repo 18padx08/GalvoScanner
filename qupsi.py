@@ -25,18 +25,18 @@ def TDC_getVersion():
 tdcbase.TDC_perror.argtypes = [c_int]
 tdcbase.TDC_perror.restype = c_char_p
 def TDC_perror(rc):
-	return tdcbase.TDC_perror
+	return tdcbase.TDC_perror()
 
 tdcbase.TDC_getTimebase.restype = c_double
 def TDC_getTimebase():
-	return tdcbase.TDC_getTimebase
+	return tdcbase.TDC_getTimebase()
 
 tdcbase.TDC_init.argtypes = [c_int]
 tdcbase.TDC_init.restype = c_int
 def TDC_init (deviceId):
 	return tdcbase.TDC_init(deviceId)
 
-tdcbase.TDC_deinit.restype = c_int
+tdcbase.TDC_deInit.restype = c_int
 def TDC_deInit():
 	return tdcbase.TDC_deInit()
 
@@ -77,7 +77,7 @@ tdcbase.TDC_enableChannels.restype = c_int
 def TDC_enableChannels(channelMask):
 	return tdcbase.TDC_enableChannels(channelMask)
 
-tdcbase.TDC_setChannelDelays.argtypes = [c_int_p]
+tdcbase.TDC_setChannelDelays.argtypes = [POINTER(c_int)]
 tdcbase.TDC_setChannelDelays.restype = c_int
 def TDC_setChannelDelays(delays):
 	return tdcbase.TDC_setChannelDelays(delays)
@@ -92,7 +92,7 @@ tdcbase.TDC_setExposureTime.restype = c_int
 def TDC_setExposureTime(time):
 	return tdcbase.TDC_setExposureTime(c_int(time))
 
-tdcbase.TDC_getDeviceParams.argtypes = [c_int_p, c_int_p, c_int_p]
+tdcbase.TDC_getDeviceParams.argtypes = [POINTER(c_int), POINTER(c_int), POINTER(c_int)]
 tdcbase.TDC_getDeviceParams.restype = c_int
 def TDC_getDeviceParams(channelMask, coincWin, expTime):
 	return tdcbase.TDC_getDeviceParams(byref(channelMask), byref(coincWin), byref(expTime))
@@ -102,7 +102,7 @@ tdcbase.TDC_switchTermination.restype = c_int
 def TDC_switchTermination(on):
 	return tdcbase.TDC_switchTermination(on)
 	
-tdcbase.TDC_configureSelftest.argtypes = [channelMask, period, burstSize, burstDist]
+tdcbase.TDC_configureSelftest.argtypes = [POINTER(c_int), c_int, c_int, c_int]
 tdcbase.TDC_configureSelftest.restype = c_int
 def TDC_configureSelftest(channelMask, period, burstSize, burstDist):
 	return tdcbase.TDC_configureSelftest(channelMask, period, burstDist)
@@ -117,17 +117,17 @@ tdcbase.TDC_setTimestampBufferSize.reset = c_int
 def TDC_setTimestampBufferSize(size):
 	return TDC_setTimestampBufferSize(size)
 	
-tdcbase.TDC_freezeBuffers.argtypes = c_bool
+tdcbase.TDC_freezeBuffers.argtypes = [c_bool]
 tdcbase.TDC_freezeBuffers.restype = c_int
 def TDC_freezeBuffers(freeze):
 	return tdcbase.TDC_freezeBuffers(freeze)
 
-tdcbase.TDC_getCoincCounters.argtypes = [c_int_p, c_int_p]
+tdcbase.TDC_getCoincCounters.argtypes = [POINTER(c_int), POINTER(c_int)]
 tdcbase.TDC_getCoincCounters.restype = c_int
 def TDC_getCoincCounters(data, updates=None):
 	return tdcbase.TDC_getCoincCounters(data, (updates) if updates is not None else None)
 
-tdcbase.TDC_getLastTimestamps.argtypes = [c_bool, POINTER(c_long), POINTER(c_short),c_int_p]
+tdcbase.TDC_getLastTimestamps.argtypes = [c_bool, POINTER(c_long), POINTER(c_short),POINTER(c_int)]
 tdcbase.TDC_getLastTimestamps.restype = c_int
 def TDC_getLastTimestamps(reset, timestamps, channels, valid):
 	return tdcbase.TDC_getLastTimestamps(reset, byref(timestamps), byref(channels), byref(valid))
@@ -165,18 +165,18 @@ tdcbase.TDC_enableStartStop.restype = c_int
 def TDC_enableStartStop(enable):
 	return tdcbase.TDC_enableStartStop(enable)
 
-tdcbase.TDC_setHisogramParams.argtypes = [c_int, c_int]
-tdcbase.TDC_setHisogramParams.restype = c_int
-def TDC_setHisogramParams(binWidth, binCount):
-	return tdcbase.TDC_setHisogramParams(binWidth, binCount)
+tdcbase.TDC_setHistogramParams.argtypes = [c_int, c_int]
+tdcbase.TDC_setHistogramParams.restype = c_int
+def TDC_setHistogramParams(binWidth, binCount):
+	return tdcbase.TDC_setHistogramParams(binWidth, binCount)
 
 
-tdcbase.TDC_getHistogramParams.argtypes = [c_int_p, c_int_p]
+tdcbase.TDC_getHistogramParams.argtypes = [POINTER(c_int), POINTER(c_int)]
 tdcbase.TDC_getHistogramParams.restype = c_int
 def TDC_getHistogramParams(binWidth, binCount):
 	return TDC_getHistogramParams(byref(binWidth), byref(binCount))
 
-tdcbase.TDC_getHistogram.argtypes = [c_int, c_int, c_bool, c_int_p, c_int_p, c_int_p, c_int_p, c_int_p, c_int_p, c_int_p]
+tdcbase.TDC_getHistogram.argtypes = [c_int, c_int, c_bool, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int)]
 def TDC_getHistogram(chanA=-1, chanB=-1, reset=False, data=None, count=None, tooSmall=None, tooLarge=None, eventsA=None, eventsB=None, expTime=None):
 	windll.tdcbase.TDC_getHistogram(chanA,chanB, reset, byref(data) if data is not None else None, byref(count)if count is not None else None, byref(tooSmall)if tooSmall is not None else None, byref(tooLarge)if tooLarge is not None else None, byref(eventsA)if eventsA is not None else None, byref(eventsB)if eventsB is not None else None, byref(expTime)if expTime is not None else None)
 
@@ -301,12 +301,12 @@ def TDC_createHbtFunction():
 	return tdcbase.TDC_createHbtFunction()
 
 tdcbase.TDC_releaseHbtFunction.argtypes = [POINTER(TDC_HbtFunction)]
-tdcbase.TDC_releaseHbtFunction.restype = c_void
+tdcbase.TDC_releaseHbtFunction.restype = c_void_p
 def TDC_releaseHbtFunction(fct):
 	return tdcbase.TDC_releaseHbtFunction(fct)
 	
-tdcbase.TDC_analyseHbtFunction.argtypes = [POINTER(TDC_HbtFunction), c_int_p,c_int_p,c_int_p,c_int_p,POINTER(c_double), c_int]
-tdcbase.TDC_analyseHbtFunction.restype = c_void
+tdcbase.TDC_analyseHbtFunction.argtypes = [POINTER(TDC_HbtFunction), POINTER(c_int),POINTER(c_int),POINTER(c_int),POINTER(c_int),POINTER(c_double), c_int]
+tdcbase.TDC_analyseHbtFunction.restype = c_void_p
 def TDC_analyseHbtFunction(fct, capacity, size, binWidth, iOffset, values, bufSize):
 	return tdcbase.TDC_analyseHbtFunction(fct, capacity, byref(size), byref(binWidth), byref(iOffset), values, bufSize)
 
@@ -314,10 +314,10 @@ def TDC_analyseHbtFunction(fct, capacity, size, binWidth, iOffset, values, bufSi
 #tdclifetm.h
 ##########################################################################################################################################
 
-tdcbase.TDC_enableLeft.argtypes = [c_bool]
-tdcbase.TDC_enableLeft.restype = c_int
-def TDC_enableLeft(enable):
-	return tdcbase.TDC_enableLeft(enable)
+tdcbase.TDC_enableLft.argtypes = [c_bool]
+tdcbase.TDC_enableLft.restype = c_int
+def TDC_enableLft(enable):
+	return tdcbase.TDC_enableLft(enable)
 
 tdcbase.TDC_setLftParams.argtypes = [c_int, c_int]
 tdcbase.TDC_setLftParams.restype = c_int
@@ -333,7 +333,7 @@ tdcbase.TDC_resetLftHistogram.restype = c_int
 def TDC_resetLftHistogram():
 	return tdcbase.TDC_resetLftHistogram()
 
-tdcbase.TDC_getLftHistogram.argtypes = [c_bool, c_int_p, c_int_p, c_int_p, c_int_p, POINTER(c_long)]
+tdcbase.TDC_getLftHistogram.argtypes = [c_bool, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_long)]
 tdcbase.TDC_getLftHistogram.restype = c_int
 def TDC_getLftHistogram(reset, data, tooBig, startEvts, stopEvts, expTime):
 	return tdcbase.TDC_getLftHistogram(reset, data, tooBig, startEvts, stopEvts, expTime)
