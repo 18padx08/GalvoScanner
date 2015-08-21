@@ -528,8 +528,11 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-			#self.findMax()
-			print(self.currentX)
+			m = np.argmax(self.dataArray[int(event.xdata)-3:int(event.xdata+3)][int(event.ydata)-3:int(event.ydata) +3])
+			x,y = np.unravel_index(m, (len(self.ysteps),len(self.xsteps)))
+			print("(%d,%d) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
+			self.goTo(x,y)
+			
 			
 	def plotCurrentRate(self, master=None, refToMain=None):
 		if master is not None:
