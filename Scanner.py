@@ -688,7 +688,7 @@ class Scanner:
 				histAx.set_ylim([0, numpy.max(dataArray)])
 				self.histo = histAx.plot(t,dataArray)
 				histAx.plot((t[0], t[-1]), (1,1), 'r-')
-				histAx.plot((t[0],t[1]), (0.5,0.5), 'r-')
+				histAx.plot((t[0],t[-1]), (0.5,0.5), 'r-')
 				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)
