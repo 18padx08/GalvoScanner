@@ -169,12 +169,12 @@ class ScanGui:
 		
 	def setX(self, value):
 		try:
-			self.gs.setX(float(value))
+			self.gs.setX(float(value), True)
 		except(Exception):
 			print("X Outside Range")
 	def setY(self, value):
 		try:
-			self.gs.setY(float(value))
+			self.gs.setY(float(value), True)
 		except(Exception):
 			print("Y Outside Range")
 	def startScanning(self, master=None):

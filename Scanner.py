@@ -439,23 +439,29 @@ class Scanner:
 	#where the laser beam will hit the target
 	#-the incident angle on the lens will be phi as well
 	#-the formula for s(alpha_i) = (beamDiameter/2.) *
-	def setX(self, X):
+	def setX(self, X, incremental=False):
 		#check if we are on the sample 
 		if X < self.minX or X > self.maxX:
 			raise(AngleOutsideOfRangeException)
 		#set the angle of  the galvo
-		self.__setPhiRad(numpy.arctan(X * self.lens.LensNumber()))
+		if incremental:
+			self.setX(self.currentX + X)
+		else:
+			self.__setPhiRad(numpy.arctan(X * self.lens.LensNumber()))
 		#set the state of the situation
-		self.currentX = X
+			self.currentX = X
 		
-	def setY(self, Y):
+	def setY(self, Y, incremental=False):
 		#check if we are on the sample 
 		if Y < self.minY or Y > self.maxY:
 			raise(AngleOutsideOfRangeException)
 		#set the angle of  the galvo
-		self.__setThetaRad(numpy.arctan(Y * self.lens.LensNumber()))
+		if incremental:
+			self.setY(self.currentY + Y)
+		else:
+			self.__setThetaRad(numpy.arctan(Y * self.lens.LensNumber()))
 		#set the state of the situation
-		self.currentY = Y
+			self.currentY = Y
 	
 	def setPoint(self, x, y):
 		self.setX(x)
@@ -605,7 +611,7 @@ class Scanner:
 			#set up array with at least binCount elements
 
 			from matplotlib.figure import Figure
-			histFig = Figure(figsize=(5,3), dpi=100)
+			histFig = Figure(figsize=(9,3), dpi=100)
 			histFig.subplots_adjust(left=0.2)
 			histAx = histFig.add_subplot(111)
 			for item in ([histAx.title, histAx.xaxis.label, histAx.yaxis.label] +histAx.get_xticklabels() + histAx.get_yticklabels()):
@@ -633,7 +639,7 @@ class Scanner:
 				toolbar_frame = refToMain.createFrame(master)
 			else:
 				toolbar_frame = tk.Frame(master)
-			toolbar_frame.grid(row=7,column=4, columnspan=5, rowspan=3)
+			toolbar_frame.grid(row=7,column=2, columnspan=7, rowspan=3)
 			if refToMain is not None:
 				histoCanvas = refToMain.createCanvas(histFig, toolbar_frame)
 			else:
@@ -681,6 +687,8 @@ class Scanner:
 					dataArray[b] = 0
 				histAx.set_ylim([0, numpy.max(dataArray)])
 				self.histo = histAx.plot(t,dataArray)
+				histAx.plot((t[0], t[-1]), (1,1), 'r-')
+				histAx.plot((t[0],t[1]), (0.5,0.5), 'r-')
 				histFig.canvas.draw()
 				#only update every second
 				time.sleep(1)
@@ -703,7 +711,7 @@ class Scanner:
 		countY = 0
 		from matplotlib.colors import LogNorm
 		from matplotlib.figure import Figure
-		f = Figure(figsize=(8,4), dpi=100)
+		f = Figure(figsize=(4,4), dpi=100)
 		f.subplots_adjust(left=0.2)
 		self.fplt = f.add_subplot(111)
 		#f.tight_layout()
@@ -723,7 +731,7 @@ class Scanner:
 			toolbar_frame = self.refToMain.createFrame(master)
 		else:
 			toolbar_frame = tk.Frame(master)
-		toolbar_frame.grid(row=4,column=0, columnspan=4, rowspan=6)
+		toolbar_frame.grid(row=4,column=0, columnspan=2, rowspan=6)
 		#if we have a ref to main try to execute the gui generation on the main thread
 		if refToMain is not None:
 			self.canvas = refToMain.createCanvas(f, toolbar_frame)
