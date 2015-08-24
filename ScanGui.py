@@ -97,6 +97,11 @@ class ScanGui:
 		self.normCheck = Checkbutton(frame, text="Normalization", variable=self.norm,command=self.checkNormalization)
 		self.normCheck.grid(row=3,column=8)
 		
+		#checkbox for automatical maximum feedback
+		self.autofeedback = IntVar()
+		self.autofeedbackCheck = Checkbutton(frame, text="Auto feedback", variable=self.autofeedback, command=self.checkAutofeedback)
+		self.autofeedbackCheck.grid(row=4, column=8)
+		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
@@ -127,7 +132,8 @@ class ScanGui:
 			self.gs.setPoint(0,0)
 			self.gs.setFocus(0)
 			self.mainloop["ratePlot"] = (partial(self.gs.plotCurrentRate, frame), False)
-			self.mainloop["checkForMax"] = (self.gs.checkForMax, True, 10)
+			#give a reference to the string var of the correction textbox
+			self.mainloop["checkForMax"] = (partial(self.gs.checkForMax, self.correctionSigToBack), True, 10)
 			self.mainloop()
 			master.mainloop()
 			#start TK main thread for input handling 
@@ -174,10 +180,18 @@ class ScanGui:
 		else:
 			self.gs.sigToBack = float(self.correctionSigToBack.get())
 			self.gs.signalCorrection = True
+	def checkAutofeedback(self):
+		if self.autofeedback.get() == 0:
+			self.gs.noCheckForMax = False
+			self.correctionTextField.config(state="normal")
+		else:
+			self.gs.noCheckForMax = True
+			self.correctionTextField.config(state="readonly")
 	
 	def autoCheck(self):
 		if self.autocorr.get() == 0:
 			self.gs.autocorrection = False
+			self.checkCorrection
 		else:
 			self.gs.autocorrection = True
 	

@@ -878,8 +878,8 @@ class Scanner:
 		error = fc2Connect(self._context, self._guid)
 		if error!= FC2_ERROR_OK.value:
 			print("Error in fc2Connect: " + str(error))		
-	def checkForMax(self):
-		if not hasattr(self, "interrupt") or not self.interrupt:
+	def checkForMax(self, textBoxReference):
+		if not hasattr(self, "interrupt") or not self.interrupt or not hasattr(self, "noCheckForMax") or not self.noCheckForMax:
 			print("scan has not lunched yet, or is running")
 			return
 		TDC_freezeBuffers(True)
@@ -920,6 +920,7 @@ class Scanner:
 		minimum = numpy.min(subarray)
 		if self.autocorrection:
 			self.sigToBack = (maximum-minimum)/maximum
+			textBoxReference.set(self.sigToBack)
 		y,x = numpy.unravel_index(m, subarray.shape)
 		#print(m, x, y)
 		#calculate real index
