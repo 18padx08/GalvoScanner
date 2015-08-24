@@ -485,6 +485,10 @@ class Scanner:
 		self.currentXCoord = x
 		self.currentYCoord = y
 		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
+	def getGoToX(self,x):
+		return self.xsteps[int(x)]
+	def getGoToY(self, y):
+		return self.ysteps[int(y)]
 	
 	def showHistogram(self):
 		plt.clf()
@@ -887,6 +891,9 @@ class Scanner:
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.01
+		tmpIntens = 0
+		tmpLocX = 0
+		tmpLocY = 0
 		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
 			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
@@ -894,10 +901,15 @@ class Scanner:
 				ret = TDC_getCoincCounters(tmpBuffer)
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
 				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
+				tmpLocX += tmpData[y][x] * self.getGoToX(x+xfrom)
+				tmpLocY += tmpData[y][x] * self.getGoToY(y+yfrom)
+				tmpIntens += tmpData[y][x]
 				time.sleep(self.exposureTime/1000)
 				#same as for the interrupt
 		
 		subarray = tmpData
+		tmpLocX /= tmpIntens
+		tmpLocY /= tmpIntens
 		print(subarray, xfrom, xto, yfrom, yto)
 		m = numpy.argmax(subarray)
 		y,x = numpy.unravel_index(m, subarray.shape)
@@ -906,8 +918,8 @@ class Scanner:
 		#TODO check consistency of x and y throughout class
 		x = xfrom + x
 		y = yfrom + y
-		print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
-		self.goTo(x,y)
+		print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, tmpLocX,tmpLocY))
+		self.setPoint(tmpLocX, tmpLocY)
 		
 		#clean up
 		tmpB = None
