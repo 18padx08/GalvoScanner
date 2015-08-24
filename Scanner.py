@@ -893,9 +893,11 @@ class Scanner:
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.01
-		tmpIntens = 0
-		tmpLocX = 0
-		tmpLocY = 0
+		tmpIntens = 0.0
+		tmpLocX = 0.0
+		tmpLocY = 0.0
+		xStart = self.currentX
+		yStart = self.currentY
 		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
 			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
@@ -905,13 +907,13 @@ class Scanner:
 				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
 				tmpLocX += tmpData[y][x] * self.getGoToX(x+xfrom)
 				tmpLocY += tmpData[y][x] * self.getGoToY(y+yfrom)
-				tmpIntens += tmpData[y][x]
 				time.sleep(self.exposureTime/1000)
 				#same as for the interrupt
 		
 		subarray = tmpData
-		tmpLocX /= tmpIntens
-		tmpLocY /= tmpIntens
+		tmpIntens = numpy.sum(tmpData)
+		tmpLocX = tmpLocX/tmpIntens
+		tmpLocY = tmpLocY/tmpIntens
 		print(subarray, xfrom, xto, yfrom, yto)
 		m = numpy.argmax(subarray)
 		maximum = numpy.max(subarray)
@@ -919,12 +921,15 @@ class Scanner:
 		if self.autocorrection:
 			self.sigToBack = (maximum-minimum)/maximum
 		y,x = numpy.unravel_index(m, subarray.shape)
-		print(m, x, y)
+		#print(m, x, y)
 		#calculate real index
 		#TODO check consistency of x and y throughout class
 		x = xfrom + x
 		y = yfrom + y
-		print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, tmpLocX,tmpLocY))
+		print("(%f,%f) -> (%f,%f)"%(xStart, yStart, tmpLocX,tmpLocY))
+		
+		self.currentXCoord = x
+		self.currentYCoord = y
 		self.setPoint(tmpLocX, tmpLocY)
 		
 		#clean up
