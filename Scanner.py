@@ -875,10 +875,10 @@ class Scanner:
 			return
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
 		#assume that currentXCoord and currentYCoord are set to the right spot
-		xfrom = max(self.currentYCoord-3,0)
-		xto = min(self.currentYCoord + 3, len(self.ysteps))
-		yfrom = max(self.currentXCoord-3,0)
-		yto = min(self.currentXCoord+3, len(self.xsteps))
+		xfrom = max(self.currentXCoord-3,0)
+		xto = min(self.currentXCoord + 3, len(self.xsteps))
+		yfrom = max(self.currentYCoord-3,0)
+		yto = min(self.currentYCoord+3, len(self.ysteps))
 		tmpData = numpy.ones((6,6), dtype=numpy.float64)
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
@@ -886,6 +886,7 @@ class Scanner:
 		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
 			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
+				self.goTo(x,y)
 				ret = TDC_getCoincCounters(tmpBuffer)
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
 				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
