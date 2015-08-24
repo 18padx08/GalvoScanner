@@ -874,6 +874,7 @@ class Scanner:
 		if not hasattr(self, "interrupt") or not self.interrupt:
 			print("scan has not lunched yet, or is running")
 			return
+		TDC_freezeBuffers(True)
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
 		#assume that currentXCoord and currentYCoord are set to the right spot
 		xfrom = max(self.currentXCoord-3,0)
@@ -887,7 +888,7 @@ class Scanner:
 		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
 			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
-				self.goTo(x,y)
+				self.goTo(x+xfrom,y+yfrom)
 				ret = TDC_getCoincCounters(tmpBuffer)
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
 				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
@@ -897,7 +898,7 @@ class Scanner:
 		subarray = tmpData
 		print(subarray, xfrom, xto, yfrom, yto)
 		m = numpy.argmax(subarray)
-		x,y = numpy.unravel_index(m, subarray.shape)
+		y,x = numpy.unravel_index(m, subarray.shape)
 		print(m, x, y)
 		#calculate real index
 		#TODO check consistency of x and y throughout class
@@ -908,4 +909,5 @@ class Scanner:
 		
 		#clean up
 		tmpB = None
-		tmpBuffer = None		
+		tmpBuffer = None	
+		TDC_freezeBuffers(False)	
