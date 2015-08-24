@@ -100,7 +100,9 @@ class Scanner:
 		self.currentXCoord = 0
 		self.currentYCoord = 0
 		self.sigToBack = 0.5
-		doNormalization = False
+		self.doNormalization = False
+		self.autocorrection = False
+		self.quadSize = 3
 		TDC_init(-1)
 		#exposure time in ms
 		self.exposureTime = 1
@@ -540,21 +542,21 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-			xfrom = max(int(event.xdata)-3,0)
-			xto = min(xfrom +6, len(self.xsteps))
-			yfrom = max(int(event.ydata)-3,0)
-			yto = min(yfrom +6, len(self.ysteps))
+			xfrom = max(int(event.xdata)-self.quadSize,0)
+			xto = min(xfrom +self.quadSize*2, len(self.xsteps))
+			yfrom = max(int(event.ydata)-self.quadSize,0)
+			yto = min(yfrom +self.quadSize*2, len(self.ysteps))
 			subarray = self.dataArray[yfrom:yto, xfrom:xto]
 			print(subarray, xfrom, xto, yfrom, yto)
 			m = numpy.argmax(subarray)
-			x,y = numpy.unravel_index(m, subarray.shape)
+			y,x = numpy.unravel_index(m, subarray.shape)
 			print(m, x, y)
 			#calculate real index
 			#TODO check consistency of x and y throughout class
-			x = yfrom + x
-			y = xfrom + y
+			x = xfrom + x
+			y = yfrom + y
 			print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
-			self.goTo(y,x)
+			self.goTo(x,y)
 			
 			
 	def plotCurrentRate(self, master=None, refToMain=None):
@@ -879,11 +881,11 @@ class Scanner:
 		TDC_freezeBuffers(True)
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
 		#assume that currentXCoord and currentYCoord are set to the right spot
-		xfrom = max(self.currentXCoord-3,0)
-		xto = min(self.currentXCoord + 3, len(self.xsteps))
-		yfrom = max(self.currentYCoord-3,0)
-		yto = min(self.currentYCoord+3, len(self.ysteps))
-		tmpData = numpy.ones((6,6), dtype=numpy.float64)
+		xfrom = max(self.currentXCoord-self.quadSize,0)
+		xto = min(self.currentXCoord + self.quadSize, len(self.xsteps))
+		yfrom = max(self.currentYCoord-self.quadSize,0)
+		yto = min(self.currentYCoord+self.quadSize, len(self.ysteps))
+		tmpData = numpy.ones((self.quadSize*2,self.quadSize*2), dtype=numpy.float64)
 		tmpB = c_int *19
 		tmpBuffer = tmpB()
 		sleepTime = 0.01
@@ -900,6 +902,10 @@ class Scanner:
 		subarray = tmpData
 		print(subarray, xfrom, xto, yfrom, yto)
 		m = numpy.argmax(subarray)
+		maximum = numpy.max(subarray)
+		minimum = numpy.min(subarray)
+		if self.autocorrection:
+			self.sigToBack = (maximum-minimum)/maximum
 		y,x = numpy.unravel_index(m, subarray.shape)
 		print(m, x, y)
 		#calculate real index
