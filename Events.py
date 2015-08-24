@@ -16,17 +16,17 @@ class ExThread(threading.Thread):
 		self.exc_raised = threading.Event()
 		self.exc_raised.clear()
 		self.target = target
-
+		self.delay = 0
 	def run_with_exception(self):
 		print("start thread")
 		self.target()
 	
-	def run(self, delay=0):
+	def run(self):
 		try:
-			if delay > 0:
+			if self.delay > 0:
 				import time
-				time.sleep(delay)
-			self.run_with_exception()
+				time.sleep(self.delay)
+			self.target()
 		except Exception:
 			print("omg i got an exception", sys.exc_info())
 			self.__status_queue.put(sys.exc_info())
@@ -114,8 +114,10 @@ class Callback:
 							print("Thread could not recover")
 						else:
 						#if we have a continues thread restart it with the delay
+						#TODO make delay possible
 							print("continues task, rerun it")
-							thread.run(self.callback_chain[self.currentIndex][3])
+							#thread.delay = self.callback_chain[self.currentIndex][3]
+							thread.run()
 							#thread.run()
 							print("set delay to %d"%self.callback_chain[self.currentIndex][3])
 							flagRunning = True

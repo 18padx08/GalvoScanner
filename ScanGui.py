@@ -87,10 +87,16 @@ class ScanGui:
 		self.correctionTextField = Entry(frame, textvariable=self.correctionSigToBack)
 		self.correctionTextField.grid(row=1, column=9)
 		self.correctionSigToBack.set("0.5")
+		
+		#autocorrection
+		self.autocorr = IntVar()
+		self.autocorrCheck = Checkbutton(frame, text="autocorrection", variable=self.autocorr, command=self.autoCheck)
+		self.autocorrCheck.grid(row=2,column=8)
 		#checkbox for normalization
 		self.norm = IntVar()
-		self.normCheck = Checkbutton(frame, text="Nomralization", variable=self.norm,command=self.checkNormalization)
-		self.normCheck.grid(row=2,column=8)
+		self.normCheck = Checkbutton(frame, text="Normalization", variable=self.norm,command=self.checkNormalization)
+		self.normCheck.grid(row=3,column=8)
+		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
@@ -166,8 +172,14 @@ class ScanGui:
 		if self.corr.get() == 0:
 			self.gs.signalCorrection = False
 		else:
-			self.gs.sigToBack = float(self.signalCorrection.get())
+			self.gs.sigToBack = float(self.correctionSigToBack.get())
 			self.gs.signalCorrection = True
+	
+	def autoCheck(self):
+		if self.autocorr.get() == 0:
+			self.gs.autocorrection = False
+		else:
+			self.gs.autocorrection = True
 	
 	def checkNormalization(self):
 		if self.norm.get() == 0:
