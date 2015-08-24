@@ -721,6 +721,7 @@ class Scanner:
 			
 			self.histoData = dataArray
 			dataArray = None
+			TDC_releaseHbtFunction(hbtFunction)
 			
 	
 		
