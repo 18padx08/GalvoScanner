@@ -83,6 +83,14 @@ class ScanGui:
 		self.corr= IntVar()
 		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
 		self.correctionCheck.grid(row=1, column=8)
+		self.correctionSigToBack = StringVar()
+		self.correctionTextField = Entry(frame, textvariable=self.correctionSigToBack)
+		self.correctionTextField.grid(row=1, column=9)
+		self.correctionSigToBack.set("0.5")
+		#checkbox for normalization
+		self.norm = IntVar()
+		self.normCheck = Checkbutton(frame, text="Nomralization", variable=self.norm,command=self.checkNormalization)
+		self.normCheck.grid(row=2,column=8)
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
@@ -158,7 +166,14 @@ class ScanGui:
 		if self.corr.get() == 0:
 			self.gs.signalCorrection = False
 		else:
+			self.gs.sigToBack = float(self.signalCorrection.get())
 			self.gs.signalCorrection = True
+	
+	def checkNormalization(self):
+		if self.norm.get() == 0:
+			self.gs.doNormalization = False
+		else:
+			self.gs.doNormalization = True
 	
 	def stopScanning(self):
 		#self.startScan.config(state=NORMAL)

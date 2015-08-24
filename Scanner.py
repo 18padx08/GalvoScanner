@@ -99,6 +99,8 @@ class Scanner:
 		self.baseVoltage = 5
 		self.currentXCoord = 0
 		self.currentYCoord = 0
+		self.sigToBack = 0.5
+		doNormalization = False
 		TDC_init(-1)
 		#exposure time in ms
 		self.exposureTime = 1
@@ -702,13 +704,13 @@ class Scanner:
 				#normalize data (we assume to have a probabilty of one at large taus, so take the midvalue of the last 5 elements on each side)
 				#print(numpy.concatenate((dataArray[:5], dataArray[-5:])))
 				normConst = numpy.mean(numpy.concatenate((dataArray[:5], dataArray[-5:])))
-				#if normConst > 0:
-					#dataArray /= normConst
+				if normConst > 0 and self.doNormalization:
+					dataArray /= normConst
 				
 				#TODO make correction not static
 				#we assume a poor signal to background noise of 0.5
 				if self.signalCorrection:
-					dataArray = (dataArray-(1-0.5**2))/0.5**2
+					dataArray = (dataArray-(1-self.sigToBack**2))/self.sigToBack**2
 					b = dataArray<0
 					dataArray[b] = 0
 				histAx.set_ylim([0, numpy.max(dataArray)])

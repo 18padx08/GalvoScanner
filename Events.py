@@ -115,7 +115,7 @@ class Callback:
 						else:
 						#if we have a continues thread restart it with the delay
 							print("continues task, rerun it")
-							thread.runWithDelay(self.callback_chain[self.currentIndex][3])
+							thread.run(self.callback_chain[self.currentIndex][3])
 							#thread.run()
 							print("set delay to %d"%self.callback_chain[self.currentIndex][3])
 							flagRunning = True
