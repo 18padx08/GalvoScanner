@@ -184,18 +184,17 @@ class ScanGui:
 	def checkAutofeedback(self):
 		if self.autofeedback.get() == 0:
 			self.gs.noCheckForMax = False
-			self.correctionTextField.config(state="normal")
 		else:
 			self.gs.noCheckForMax = True
-			self.correctionTextField.config(state="readonly")
+
 	
 	def autoCheck(self):
 		if self.autocorr.get() == 0:
 			self.gs.autocorrection = False
-			self.checkCorrection
+			self.correctionTextField.config(state="normal")
 		else:
 			self.gs.autocorrection = True
-	
+			self.correctionTextField.config(state="readonly")	
 	def checkNormalization(self):
 		if self.norm.get() == 0:
 			self.gs.doNormalization = False
