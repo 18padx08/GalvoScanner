@@ -817,6 +817,8 @@ class Scanner:
 					#update the master (we only can get interrupts from the gui, so its save to assume that master is not None)
 					master.update()
 					
+					#make sure the interrupt is set
+					self.interrupt = True
 					#clear the buffer, otherwise we get memory leaks and issues which let the python interpreter crash)
 					tmpBuffer = None
 					tmpB = None
