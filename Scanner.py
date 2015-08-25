@@ -103,6 +103,7 @@ class Scanner:
 		self.doNormalization = False
 		self.autocorrection = False
 		self.quadSize = 3
+		self.noCheckForMax = True
 		TDC_init(-1)
 		#exposure time in ms
 		self.exposureTime = 1

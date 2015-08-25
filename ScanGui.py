@@ -101,6 +101,7 @@ class ScanGui:
 		self.autofeedback = IntVar()
 		self.autofeedbackCheck = Checkbutton(frame, text="Auto feedback", variable=self.autofeedback, command=self.checkAutofeedback)
 		self.autofeedbackCheck.grid(row=4, column=8)
+		self.autofeedbackCheck.select()
 		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
