@@ -741,6 +741,7 @@ class Scanner:
 			
 			self.histoData = dataArray
 			dataArray = None
+			histAx.cla()
 			TDC_releaseHbtFunction(hbtFunction)
 			
 	
