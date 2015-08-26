@@ -241,7 +241,7 @@ class ScanGui:
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
 		if f is not None: 
-			self.gs.loadConfig(f.name)
+			self.gs.loadConfig(f.name, focus=self.scale)
 	def loadHookFile(self):
 		f = filedialog.askopenfile(filetypes=[("HookFile", "*.hk")])
 		if f is not None:

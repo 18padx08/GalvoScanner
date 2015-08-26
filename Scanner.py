@@ -170,7 +170,7 @@ class Scanner:
 		time.sleep(2)
 	
 	#load config file
-	def loadConfig(self, configFile="scanner_config.cfg"):
+	def loadConfig(self, configFile="scanner_config.cfg", focus=None):
 		import json
 		import os.path
 		if os.path.isfile(configFile):
@@ -182,6 +182,8 @@ class Scanner:
 				setattr(self, key, self._config["settings"][key])
 		if hasattr(self, "focus"):
 			self.setFocus(self.focus)
+		if focus is not None:
+			focus.set(self.focus)
 		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 
 	#setImage properties
@@ -555,21 +557,22 @@ class Scanner:
 		if self.interrupt and event.xdata is not None and event.ydata is not None:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
-			xfrom = max(int(event.xdata)-self.quadSize,0)
-			xto = min(xfrom +self.quadSize*2, len(self.xsteps))
-			yfrom = max(int(event.ydata)-self.quadSize,0)
-			yto = min(yfrom +self.quadSize*2, len(self.ysteps))
-			subarray = self.dataArray[yfrom:yto, xfrom:xto]
-			print(subarray, xfrom, xto, yfrom, yto)
-			m = numpy.argmax(subarray)
-			y,x = numpy.unravel_index(m, subarray.shape)
-			print(m, x, y)
-			#calculate real index
-			#TODO check consistency of x and y throughout class
-			x = xfrom + x
-			y = yfrom + y
-			print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
-			self.goTo(x,y)
+			if not self.noCheckForMax:
+				xfrom = max(int(event.xdata)-self.quadSize,0)
+				xto = min(xfrom +self.quadSize*2, len(self.xsteps))
+				yfrom = max(int(event.ydata)-self.quadSize,0)
+				yto = min(yfrom +self.quadSize*2, len(self.ysteps))
+				subarray = self.dataArray[yfrom:yto, xfrom:xto]
+				print(subarray, xfrom, xto, yfrom, yto)
+				m = numpy.argmax(subarray)
+				y,x = numpy.unravel_index(m, subarray.shape)
+				print(m, x, y)
+				#calculate real index
+				#TODO check consistency of x and y throughout class
+				x = xfrom + x
+				y = yfrom + y
+				print("(%f,%f) -> (%d,%d)"%(self.currentX, self.currentY, x,y))
+				self.goTo(x,y)
 			
 			
 	def plotCurrentRate(self, master=None, refToMain=None):
