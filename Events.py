@@ -132,6 +132,8 @@ class Callback:
 							currentCallback = self.callback_chain[self.currentIndex]
 							del_arr += [currentCallback[2]]
 							del self.callback_chain[self.currentIndex]
+							#we removed an item, so everything is adjusteda
+							self.currentIndex -= 1
 					if self.currentIndex + 1 < len(self.callback_chain):	
 						self.currentIndex += 1
 				for name in del_arr:
@@ -174,6 +176,11 @@ class Callback:
 				self.threads = {}
 			self.threads[key] = self.callObject(functions)
 		self.addItem.set()
+	
+	def remove(self, item):
+		if item in self.threads:
+			self.threads[item].stop()
+			del self.threads[item]
 		
 	def __contains__(self,key):
 		return key in self.threads

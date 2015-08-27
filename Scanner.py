@@ -707,7 +707,7 @@ class Scanner:
 				if not self.hbtRunning:
 					#reset the histogram
 					print("reset TDC_getHbtCorrelations")
-					#TDC_resetHbtCorrelations()
+					TDC_resetHbtCorrelations()
 					TDC_calcHbtG2(hbtFunction)
 					startTime = time.time()
 					#be sure to not have a time diff of 0 seconds... (otherwise we divide by zero)
@@ -743,7 +743,7 @@ class Scanner:
 			
 			self.histoData = dataArray
 			dataArray = None
-			histAx.cla()
+			#histAx.cla()
 			TDC_releaseHbtFunction(hbtFunction)
 			
 	

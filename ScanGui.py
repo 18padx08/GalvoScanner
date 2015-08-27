@@ -28,10 +28,14 @@ class ScanGui:
 		frame.pack()
 		
 		#we need one slider for focus
-		self.scaleLabel = Label(frame, text="Focus: ")
-		self.scaleLabel.grid(row=0, column=0)
-		self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
-		self.scale.grid(row=0,column=1)
+		#self.scaleLabel = Label(frame, text="Focus: ")
+		#self.scaleLabel.grid(row=0, column=0)
+		self.focusVar = StringVar()
+		self.focusEntry = Entry(frame, textvariable=self.focusVar)
+		self.focusEntry.grid(row=0, column=0)
+		self.focusButton = Button(frame, text="Set Focus", command=self.focusCallback)
+		#self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
+		#self.scale.grid(row=0,column=1)
 		#a checkbox for switching autoscale off or on
 		self.v = IntVar()
 		self.checkbutton = Checkbutton(frame,text="Autoscale", variable=self.v, command=self.checkButtonChanged)
@@ -103,6 +107,10 @@ class ScanGui:
 		self.autofeedbackCheck.grid(row=4, column=8)
 		self.autofeedbackCheck.select()
 		
+		#add a checkformax thread restarter
+		self.check4MaxRestart = Button(frame, text="Restart CheckForMaxThread", command=self.restartThread)
+		self.check4MaxRestart.grid(row=5,column=8)
+		
 		#entry fields for binWidth and binCount
 		self.binWidth = StringVar()
 		self.binCount = StringVar()
@@ -145,6 +153,10 @@ class ScanGui:
 		self.gs.ReleaseObjects()
 		self.gs = None
 
+	
+	def restartThread(self):
+		self.mainloop.remove("checkForMax")
+		self.mainloop[checkForMax] = (partial(self.gs.checkForMax, self.correctionSigToBack), True, 10)
 	
 	def createCanvas(self, figure, master):
 		from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -241,7 +253,7 @@ class ScanGui:
 	def openConfigFile(self):
 		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
 		if f is not None: 
-			self.gs.loadConfig(f.name, focus=self.scale)
+			self.gs.loadConfig(f.name, focus=self.focusVar)
 	def loadHookFile(self):
 		f = filedialog.askopenfile(filetypes=[("HookFile", "*.hk")])
 		if f is not None:
@@ -255,3 +267,7 @@ class ScanGui:
 			func()
 		except:
 			messagebox.showerror("HookError", sys.exc_info()[0])
+	
+	def focusCallback():
+		theFocus = float(self.focusVar.get())
+		self.gs.setFocus(theFocus)
