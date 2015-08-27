@@ -59,8 +59,10 @@ class Callback:
 		self.running.clear()
 		self.addItem = threading.Event()
 		self.addItem.clear()
+		self.removeItem = threading.Event()
+		self.removeItem.clear()
 		self.chain_lock = threading.RLock()
-		
+		self.stoppThread = {}
 	
 	def __call__(self):
 		self.running.set()
@@ -75,11 +77,24 @@ class Callback:
 		#handle errors occuring during callback_chain
 		pass
 	
+	#find function by name, return functionobject, index
+	
+	def findFunctionByName(self, name):
+		index = 0
+		print("array has size: %d"%len(self.callback_chain))
+		for fObj in self.callback_chain:
+			print(fObj[2])
+			if fObj[2] == name:
+				print("return @ %d"%index)
+				return (fObj, index)
+			index += 1
+		return(None,0)
+			
+	
 	def updateLoop(self):
 		print("in update loop", self.running.is_set())
 		if not hasattr(self, "threads"):
 			self.threads = {}
-		self.currentIndex =0
 
 		#with self.chain_lock:
 		#	for functions in self.callback_chain:
@@ -98,6 +113,7 @@ class Callback:
 				for thread_name in self.threads:
 					thread = self.threads[thread_name]
 					print("check thread[%s]"%thread_name)
+					myFunctionObject, ind = self.findFunctionByName(thread_name)
 					try:
 						thread.join_with_exception()
 					except:
@@ -107,7 +123,7 @@ class Callback:
 						#check if the thread is dead
 						flagRunning = True
 						
-					elif self.callback_chain[self.currentIndex][1]:
+					elif myFunctionObject[1]:
 						try:
 							thread.join_with_exception()
 						except Exception:
@@ -115,12 +131,20 @@ class Callback:
 						else:
 						#if we have a continues thread restart it with the delay
 						#TODO make delay possible
-							print("continues task, rerun it")
+							print("continues task, rerun it, only if not in stoppThreads")
 							#thread.delay = self.callback_chain[self.currentIndex][3]
-							thread.run()
+							if not myFunctionObject[2] in self.stoppThread:
+								thread.run()
+								print("set delay to %d"%myFunctionObject[3])
+								flagRunning = True
+							else:
+								print("thread was requested to stop")
+								del_arr += [myFunctionObject[2]]
+								del self.callback_chain[ind]
+								del self.stoppThread[myFunctionObject[2]]
+								self.currentIndex -= 1
 							#thread.run()
-							print("set delay to %d"%self.callback_chain[self.currentIndex][3])
-							flagRunning = True
+
 					else:
 						try:
 							thread.join_with_exception()
@@ -129,13 +153,16 @@ class Callback:
 						else:
 						#thread finished and is not continues so clear it from the list
 							print("remove thread because it has finished", thread_name)
-							currentCallback = self.callback_chain[self.currentIndex]
-							del_arr += [currentCallback[2]]
-							del self.callback_chain[self.currentIndex]
+							
+							del_arr += [myFunctionObject[2]]
+							del self.callback_chain[ind]
 							#we removed an item, so everything is adjusteda
 							self.currentIndex -= 1
 					if self.currentIndex + 1 < len(self.callback_chain):	
 						self.currentIndex += 1
+				sTD = False
+				if len(del_arr) > 0:
+					sTD = True
 				for name in del_arr:
 					#remove the entries from the dictionary
 					del self.threads[name]
@@ -147,6 +174,8 @@ class Callback:
 				#print("propagateUpdate to master")
 				#if we want to use that approach, we have to find a way to send an event to the mainthread
 				#self.propagateUpdate()
+			if sTD:
+				self.removeItem.set()
 			self.addItem.wait(10)
 			self.addItem.clear()
 	
@@ -168,20 +197,25 @@ class Callback:
 		return partial(func, self)
 	
 	def __setitem__(self, key, value):
+		print("add thread %s"%key)
 		with self.chain_lock:
 			#if we have a periodic task save the intervall
 			functions = (value[0], value[1], key) if not value[1] else (value[0], value[1], key, value[2])
-			self.callback_chain += [functions]
 			if not hasattr(self, "threads"):
 				self.threads = {}
 			self.threads[key] = self.callObject(functions)
+			if key in self.threads:
+				self.callback_chain += [functions]
 		self.addItem.set()
 	
 	def remove(self, item):
-		if item in self.threads:
-			self.threads[item].stop()
-			del self.threads[item]
-		
+		#at the moment only periodic tasks can be removed, when they finished execution
+		with self.chain_lock:
+			if item in self.threads:
+				self.stoppThread[item] = True
+		print("WAIT FOR REMOVAL, UI IS BLOCKED")
+		self.removeItem.wait(20)
+		self.removeItem.clear()
 	def __contains__(self,key):
 		return key in self.threads
 class TkInterCallback(Callback):

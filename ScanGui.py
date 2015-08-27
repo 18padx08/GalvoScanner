@@ -34,6 +34,7 @@ class ScanGui:
 		self.focusEntry = Entry(frame, textvariable=self.focusVar)
 		self.focusEntry.grid(row=0, column=0)
 		self.focusButton = Button(frame, text="Set Focus", command=self.focusCallback)
+		self.focusButton.grid(row=0, column=1)
 		#self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
 		#self.scale.grid(row=0,column=1)
 		#a checkbox for switching autoscale off or on
@@ -156,7 +157,8 @@ class ScanGui:
 	
 	def restartThread(self):
 		self.mainloop.remove("checkForMax")
-		self.mainloop[checkForMax] = (partial(self.gs.checkForMax, self.correctionSigToBack), True, 10)
+		time.sleep(0.5)
+		self.mainloop["checkForMax"] = (partial(self.gs.checkForMax, self.correctionSigToBack), True, 10)
 	
 	def createCanvas(self, figure, master):
 		from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -268,6 +270,6 @@ class ScanGui:
 		except:
 			messagebox.showerror("HookError", sys.exc_info()[0])
 	
-	def focusCallback():
+	def focusCallback(self):
 		theFocus = float(self.focusVar.get())
 		self.gs.setFocus(theFocus)
