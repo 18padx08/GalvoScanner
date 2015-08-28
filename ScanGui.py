@@ -271,7 +271,7 @@ class ScanGui:
 			self.gs.takePicture(f)
 
 	def openConfigFile(self):
-		f = filedialog.askopenfile(filetypes=[("ConfigFile", "*.cfg")])
+		f = filedialog.askopenfile(initialdir="./configs",filetypes=[("ConfigFile", "*.cfg")])
 		if f is not None: 
 			self.gs.loadConfig(f.name, focus=self.focusVar)
 	def loadHookFile(self):
