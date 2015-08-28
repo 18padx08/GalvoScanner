@@ -559,7 +559,25 @@ class Scanner:
 			print(self.currentX)
 			self.goTo(int(event.xdata) if event.xdata > 0 else 0, int(event.ydata) if event.ydata > 0 else 0)
 			print(self.noCheckForMax)
-			if self.noCheckForMax:
+			ax = event.inaxes
+			canvas = event.canvas
+			xfrom = int(event.xdata)-self.quadSize
+			xto = xfrom +self.quadSize*2.0
+			yfrom = int(event.ydata)-self.quadSize
+			yto = yfrom +self.quadSize*2.0
+			if hasattr(self, "up"):
+				self.up.pop(0).remove()
+				del self.up
+			if hasattr(self, "down"):
+				self.down.pop(0).remove()
+				del self.down
+			self.up = ax.plot((xfrom, xto), ((yfrom+yto)/2., (yfrom+yto)/2.), "w-")
+			self.down = ax.plot(((xfrom + xto)/2.,(xfrom + xto)/2.), (yfrom,yto),"w-")
+			ax.set_xlim([0,len(self.xsteps)-1])
+			ax.set_ylim([len(self.ysteps)-1,0])
+			canvas.draw()
+			#don't do it!
+			if self.noCheckForMax and False:
 				xfrom = max(int(event.xdata)-self.quadSize,0)
 				xto = min(xfrom +self.quadSize*2, len(self.xsteps))
 				yfrom = max(int(event.ydata)-self.quadSize,0)
@@ -752,7 +770,7 @@ class Scanner:
 		#at start we clearly have no interrupt
 		self.interrupt = False
 		#clear data array
-		self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
+		#self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		try:
 			import tkinter as Tk
 		except ImportError:

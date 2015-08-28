@@ -13,6 +13,7 @@ import sys
 from functools import partial
 import Events
 import time
+from qupsi import *
 
 class ScanGui:
 	def __init__(self):
@@ -35,6 +36,9 @@ class ScanGui:
 		self.focusEntry.grid(row=0, column=0)
 		self.focusButton = Button(frame, text="Set Focus", command=self.focusCallback)
 		self.focusButton.grid(row=0, column=1)
+		#reconnectQuTau
+		self.rcQuTauButton = Button(frame, text="Reconnect QuTau", command=self.reconnectQuTau)
+		self.rcQuTauButton.grid(row=1, column=1)
 		#self.scale = Scale(frame,from_=0, to=5, resolution=0.001, orient=HORIZONTAL, command=self.ValueChanged)
 		#self.scale.grid(row=0,column=1)
 		#a checkbox for switching autoscale off or on
@@ -44,7 +48,7 @@ class ScanGui:
 		self.checkbutton.grid(row=3, column=5)
 		#add a button to loadConfig
 		self.openConfig = Button(frame, text="Open Config File", command=self.openConfigFile)
-		self.openConfig.grid(row=1, column=0, columnspan=2)
+		self.openConfig.grid(row=1, column=0)
 		
 	#add a button to start the scanning
 		self.startScan = Button(frame, text="Start Scan", command=lambda: self.startScanning(master=frame))
@@ -75,8 +79,8 @@ class ScanGui:
 		self.xslider = Scale(frame,from_=-0.03, to=0.03, resolution=0.00001, orient=HORIZONTAL, command=self.setY)
 		self.xslider.grid(row=0,column=8)
 		
-		self.angleButton = Button(frame, text="Show Angle", command=partial(self.showAngle, master=frame))
-		self.angleButton.grid(row=0, column=9)
+		self.angleButton = Button(frame, text="Show Voltage", command=partial(self.showAngle, master=frame))
+		self.angleButton.grid(row=1, column=8)
 		#button for showing hbt
 		self.hbtButton = Button(frame, text="HBT", command=partial(self.showHBT, master=frame))
 		self.hbtButton.grid(row=1, column=5)
@@ -87,10 +91,10 @@ class ScanGui:
 		#checkbox for correction of HBT
 		self.corr= IntVar()
 		self.correctionCheck = Checkbutton(frame, text="Correction", variable=self.corr, command=self.checkCorrection)
-		self.correctionCheck.grid(row=1, column=8)
+		self.correctionCheck.grid(row=3, column=6)
 		self.correctionSigToBack = StringVar()
 		self.correctionTextField = Entry(frame, textvariable=self.correctionSigToBack)
-		self.correctionTextField.grid(row=1, column=9)
+		self.correctionTextField.grid(row=3, column=7)
 		self.correctionSigToBack.set("0.5")
 		
 		#autocorrection
@@ -159,6 +163,20 @@ class ScanGui:
 		self.mainloop.remove("checkForMax")
 		time.sleep(0.5)
 		self.mainloop["checkForMax"] = (partial(self.gs.checkForMax, self.correctionSigToBack), True, 10)
+	
+	def reconnectQuTau(self):
+		#accept any device
+		TDC_init(-1)
+		#enable all channels
+		TDC_enableChannels(0xff)
+		#enable hbt
+		TDC_enableHbt(True)
+		#enable start stop
+		TDC_enableStartStop(True)
+		#exposure time in ms
+		self.gs.exposureTime = 1
+		TDC_setExposureTime(self.gs.exposureTime)
+		TDC_clearAllHistograms()
 	
 	def createCanvas(self, figure, master):
 		from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
