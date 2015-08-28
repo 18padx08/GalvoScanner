@@ -105,7 +105,7 @@ class Scanner:
 		self.quadSize = 3
 		self.noCheckForMax = True
 		self.startPoint = None
-		self.correctionFactor = 0
+		self.correctionFactor = (0,0)
 		#accept any device
 		TDC_init(-1)
 		#enable all channels
@@ -491,7 +491,8 @@ class Scanner:
 	def setPoint(self, x, y, directly=False):
 		self.setX(x if not directly else x + self.correctionFactor[0])
 		self.setY(y if not directly else y + self.correctionFactor[1])
-		print("Correction factor: x -> %f, y -> %f"%self.correctionFactor)
+		if self.correctionFactor is not None:
+			print("Correction factor: x -> %f, y -> %f"%(self.correctionFactor[0], self.correctionFactor[1]))
 	
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
@@ -500,10 +501,10 @@ class Scanner:
 			numpy.save(name+"_histo_", self.histoData)
 			numpy.savetxt(name+"_histo_"+".csv", self.histoData)
 	
-	def goTo(self, x, y):
+	def goTo(self, x, y, directly=False):
 		self.currentXCoord = x
 		self.currentYCoord = y
-		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)])
+		self.setPoint( self.xsteps[int(x)], self.ysteps[int(y)], directly)
 	def getGoToX(self,x):
 		return self.xsteps[int(x)]
 	def getGoToY(self, y):
@@ -774,6 +775,8 @@ class Scanner:
 	def scanSample(self, master=None, refToMain=None):
 		#at start we clearly have no interrupt
 		self.interrupt = False
+		self.startPoint = None
+		self.correctionFactor = (0,0)
 		#clear data array
 		#self.dataArray = numpy.ones((len(self.ysteps),len(self.xsteps)), dtype=numpy.float64)
 		try:
@@ -922,7 +925,7 @@ class Scanner:
 		if not hasattr(self, "interrupt") or not self.interrupt or not hasattr(self, "noCheckForMax") or not self.noCheckForMax:
 			print("scan has not lunched yet, or is running")
 			self.startPoint = None
-			self.correctionFactor = 0
+			self.correctionFactor = (0,0)
 			return
 		TDC_freezeBuffers(True)
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
@@ -943,7 +946,7 @@ class Scanner:
 		for x in numpy.linspace(0, xto-xfrom-1, xto-xfrom):
 			for y in numpy.linspace(0, yto-yfrom-1, yto-yfrom):
 				#get count rate
-				self.goTo(x+xfrom,y+yfrom)
+				self.goTo(x+xfrom,y+yfrom, directly=True)
 				ret = TDC_getCoincCounters(tmpBuffer)
 				#set the count rate (the value we get is the pure count number, so divide by exposure time)
 				tmpData[y][x] = numpy.sum(tmpBuffer) / (self.exposureTime/1000)
@@ -973,7 +976,7 @@ class Scanner:
 		
 		self.currentXCoord = x
 		self.currentYCoord = y
-		self.setPoint(tmpLocX, tmpLocY)
+		self.setPoint(tmpLocX, tmpLocY, directly=True)
 		if self.startPoint is not None:
 			self.correctionFactor = (tmpLocX - self.startPoint[0], tmpLocY - self.startPoint[1])
 		else:
