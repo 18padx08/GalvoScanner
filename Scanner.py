@@ -465,7 +465,8 @@ class Scanner:
 	def setX(self, X, incremental=False):
 		#check if we are on the sample 
 		if X < self.minX or X > self.maxX:
-			raise(AngleOutsideOfRangeException)
+			#raise(AngleOutsideOfRangeException)
+			pass
 		#set the angle of  the galvo
 		if incremental:
 			self.setX(self.currentX + X)
@@ -477,7 +478,8 @@ class Scanner:
 	def setY(self, Y, incremental=False):
 		#check if we are on the sample 
 		if Y < self.minY or Y > self.maxY:
-			raise(AngleOutsideOfRangeException)
+			#raise(AngleOutsideOfRangeException)
+			pass
 		#set the angle of  the galvo
 		if incremental:
 			self.setY(self.currentY + Y)
