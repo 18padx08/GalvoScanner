@@ -104,6 +104,8 @@ class Scanner:
 		self.autocorrection = False
 		self.quadSize = 3
 		self.noCheckForMax = True
+		self.startPoint = None
+		self.correctionFactor = 0
 		#accept any device
 		TDC_init(-1)
 		#enable all channels
@@ -484,9 +486,10 @@ class Scanner:
 		#set the state of the situation
 			self.currentY = Y
 	
-	def setPoint(self, x, y):
-		self.setX(x)
-		self.setY(y)
+	def setPoint(self, x, y, directly=False):
+		self.setX(x if not directly else x + self.correctionFactor[0])
+		self.setY(y if not directly else y + self.correctionFactor[1])
+		print("Correction factor: x -> %f, y -> %f"%self.correctionFactor)
 	
 	def saveState(self, name="tmpArray"):
 		numpy.save(name, self.dataArray)
@@ -916,6 +919,8 @@ class Scanner:
 	def checkForMax(self, textBoxReference):
 		if not hasattr(self, "interrupt") or not self.interrupt or not hasattr(self, "noCheckForMax") or not self.noCheckForMax:
 			print("scan has not lunched yet, or is running")
+			self.startPoint = None
+			self.correctionFactor = 0
 			return
 		TDC_freezeBuffers(True)
 		#the scan is not running, so check if we are on the maximum in a 6x6 px array
@@ -967,7 +972,10 @@ class Scanner:
 		self.currentXCoord = x
 		self.currentYCoord = y
 		self.setPoint(tmpLocX, tmpLocY)
-		
+		if self.startPoint is not None:
+			self.correctionFactor = (tmpLocX - self.startPoint[0], tmpLocY - self.startPoint[1])
+		else:
+			self.startPoint = (tmpLocX, tmpLocY) 
 		#clean up
 		tmpB = None
 		tmpBuffer = None	
